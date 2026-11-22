@@ -551,7 +551,7 @@
     fail: "That didn't go through. Please check your connection and try again.",
     ok: "Thank you! We'll let you know as soon as the book is out."
   };
-  const NOTIFY_ENDPOINT = "";
+  const NOTIFY_ENDPOINT = "https://formspree.io/f/mbgozngw";
   const form = $("#notifyForm");
   const msg = $("#formMsg");
   if (form && msg) {
@@ -571,7 +571,7 @@
           const res = await fetch(NOTIFY_ENDPOINT, {
             method: "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
-            body: JSON.stringify({ email: email.value })
+            body: JSON.stringify({ email: email.value, language: document.documentElement.lang })
           });
           if (!res.ok) throw new Error(String(res.status));
         } catch (err) {
