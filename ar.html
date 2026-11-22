@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>السيجارة الأخيرة — دخِّن وأنت تقرأ</title>
+  <meta name="description" content="السيجارة الأخيرة: كيف يستعبدك النيكوتين، وكيف تتحرر منه إلى الأبد. كتاب واحد. يوم واحد. سيجارة أخيرة.">
+  <meta name="theme-color" content="#fbf4ea">
+  <meta property="og:type" content="book">
+  <meta property="og:title" content="السيجارة الأخيرة">
+  <meta property="og:description" content="دخِّن وأنت تقرأ. كيف يستعبدك النيكوتين، وكيف تتحرر منه إلى الأبد.">
+  <meta property="og:image" content="assets/trailer-ar-poster.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="alternate" hreflang="ar" href="ar.html">
+  <link rel="alternate" hreflang="en" href="index.html">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="ar.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip" href="#main">تخطَّ إلى المحتوى</a>
+
+  <!-- شريط التنقل: يظهر بعد المشاهد الافتتاحية -->
+  <nav class="topbar" id="topbar" aria-label="القائمة الرئيسية">
+    <div class="topbar-inner">
+      <a href="#top" class="brand">السيجارة <em>الأخيرة</em></a>
+      <a href="#get" class="btn btn-red btn-sm">احصل على الكتاب</a>
+    </div>
+  </nav>
+
+  <!-- ============ الافتتاحية: دخان + العنوان + "هل أنت مستعد؟" ============ -->
+  <div class="stage" id="top">
+    <div class="stage-bg" aria-hidden="true">
+      <canvas id="smoke"></canvas>
+      <canvas id="dust"></canvas>
+      <svg class="burn-corner" id="burnCorner" viewBox="0 0 400 320" preserveAspectRatio="xMaxYMin meet"></svg>
+      <div class="burn-hole"></div>
+    </div>
+
+    <header class="hero">
+      <div class="hero-content" id="heroContent">
+        <p class="eyebrow fade-in" style="--d:.3s">كتاب عن التحرر من الإدمان</p>
+        <h1 class="title fade-in" style="--d:.7s">
+          <span class="t1">السيجارة</span>
+          <span class="t2 t-master">الأخيرة</span>
+        </h1>
+        <svg class="swoosh fade-in" style="--d:1.2s" viewBox="0 0 600 40" aria-hidden="true">
+          <path d="M40 34 C 110 12, 190 4, 270 6 C 190 10, 110 20, 40 34 Z"/>
+          <path d="M300 8 C 400 2, 500 8, 572 24 C 500 13, 400 8, 300 8 Z"/>
+        </svg>
+        <p class="subtitle fade-in" style="--d:1.5s">دخِّن وأنت تقرأ</p>
+        <p class="sub2 fade-in" style="--d:1.7s">كيف يستعبدك النيكوتين… وكيف تتحرر منه إلى الأبد.</p>
+        <div class="hero-cta fade-in" style="--d:2s">
+          <a href="#trailer" class="btn btn-red" data-play-trailer>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+            شاهد الإعلان
+          </a>
+          <a href="#get" class="btn btn-line">احصل على الكتاب</a>
+        </div>
+        <a class="lang-link fade-in" style="--d:2.2s" href="index.html" lang="en" hreflang="en">English</a>
+      </div>
+      <a href="#ready" class="scroll-cue fade-in" style="--d:2.6s" aria-label="مرّر للأسفل">
+        <span>مرّر</span><i></i>
+      </a>
+    </header>
+
+    <section class="ready" id="ready" aria-label="رحلتك تبدأ الآن">
+      <div class="ready-pin">
+        <p class="ready-line" data-words>رحلتك تبدأ الآن.</p>
+        <p class="ready-line ready-q" data-words>هل أنت مستعد؟</p>
+      </div>
+    </section>
+  </div>
+
+  <main id="main">
+
+    <!-- ============ الإعلان ============ -->
+    <section class="band trailer" id="trailer" aria-labelledby="trailer-title">
+      <div class="wrap">
+        <header class="sec-head center reveal">
+          <p class="kicker">الإعلان</p>
+          <h2 id="trailer-title">من يمسك <span class="red">بالسلسلة</span> حقًا؟</h2>
+          <p class="sec-lead">ثلاثون ثانية. فعّل الصوت.</p>
+        </header>
+        <figure class="player reveal" id="player">
+          <video id="trailerVideo" playsinline preload="none" poster="assets/trailer-ar-poster.jpg"
+                 data-src-wide="assets/trailer-ar.mp4" data-src-tall="assets/trailer-ar-vertical.mp4"
+                 data-poster-wide="assets/trailer-ar-poster.jpg" data-poster-tall="assets/trailer-ar-poster-vertical.jpg"></video>
+          <button class="play" id="playBtn" type="button" aria-label="شغّل الإعلان">
+            <span class="play-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></span>
+            <span class="play-label">شغّل الإعلان <span class="dur">0:32</span></span>
+          </button>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============ ليس مجرد خطة أخرى ============ -->
+    <section class="band different" aria-labelledby="diff-title">
+      <div class="wrap two-col">
+        <div class="reveal">
+          <p class="kicker">ليس مجرد خطة أخرى للإقلاع</p>
+          <h2 id="diff-title">لا لاصقات. لا حبوب. <span class="red">لا حرب إرادة.</span></h2>
+        </div>
+        <div class="prose reveal">
+          <p>قيل لك إن الإقلاع صعب، وإنه مؤلم، وإنك ستقاوم الرغبة الشديدة لشهور.</p>
+          <p>هذا الكتاب لا يحارب السيجارة. إنه يُريك من كان يمسك بالسلسلة طوال الوقت. وما إن تراه، لن تستطيع أن تتجاهله.</p>
+          <p class="aside">لن نكشف الطريقة هنا، فتلك مهمة الكتاب. لكن يمكننا أن نخبرك بما يحدث لمن يقرؤونه.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ كتاب واحد، يوم واحد ============ -->
+    <section class="band day" id="day" aria-labelledby="day-title">
+      <div class="wrap">
+        <header class="sec-head center reveal">
+          <p class="kicker">ما يمر به القارئ</p>
+          <h2 id="day-title">كتاب واحد. <span class="red">يوم واحد.</span></h2>
+        </header>
+
+        <ol class="timeline">
+          <li class="step reveal">
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32"><path d="M4 22h24M8 22a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M16 6v4M7 10l2.5 2.5M25 10l-2.5 2.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M10 26h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+            </span>
+            <p class="step-time">الصباح</p>
+            <h3>تفتح الكتاب</h3>
+            <p>ما زلت مدخنًا. أشعل سيجارة إن أردت، فالأمر مسموح.</p>
+          </li>
+          <li class="step reveal">
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="6" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M16 3v4M16 25v4M3 16h4M25 16h4M6.8 6.8l2.8 2.8M22.4 22.4l2.8 2.8M6.8 25.2l2.8-2.8M22.4 9.6l2.8-2.8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+            </span>
+            <p class="step-time">بعد الظهر</p>
+            <h3>تنجذب إليه</h3>
+            <p>ليس إلى السجائر، بل إلى الكتاب. لن تستطيع أن تتركه.</p>
+          </li>
+          <li class="step reveal">
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32"><path d="M4 22h24M9 22a7 7 0 0 1 14 0" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M16 15v-8M12.5 10.5 16 7l3.5 3.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" transform="rotate(180 16 11)"/><path d="M10 26h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+            </span>
+            <p class="step-time">المساء</p>
+            <h3>تقلب الصفحة الأخيرة</h3>
+            <p>يُنهيه كثير من القراء في اليوم نفسه الذي بدأوه فيه.</p>
+          </li>
+          <li class="step step-final reveal">
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32"><path d="M21 4.5A11.5 11.5 0 1 0 27.5 21 9 9 0 0 1 21 4.5Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg>
+            </span>
+            <p class="step-time">في تلك الليلة</p>
+            <h3>السيجارة الأخيرة</h3>
+            <p>تطفئها. ولا تُشعل أخرى أبدًا.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ السيجارة الأخيرة ============ -->
+    <section class="band last" aria-label="السيجارة الأخيرة">
+      <div class="wrap center">
+        <div class="cig" id="cig" aria-hidden="true">
+          <div class="cig-body">
+            <div class="cig-filter"></div>
+            <div class="cig-ember"></div>
+            <div class="cig-wisp"><i></i><i></i><i></i></div>
+          </div>
+        </div>
+        <blockquote class="quote reveal">
+          <p>جرّبه كثيرون. يوم واحد من القراءة. <span class="red">أُطفئت السيجارة الأخيرة</span>، ولم تُشعل بعدها أبدًا.</p>
+        </blockquote>
+      </div>
+    </section>
+
+    <!-- ============ انظر بعناية إلى الغلاف ============ -->
+    <section class="band cover-story" id="cover" aria-labelledby="cover-title">
+      <div class="wrap cover-grid">
+        <div class="cover-frame reveal" id="coverFrame">
+          <img src="assets/cover-ar.jpg" alt="غلاف الكتاب: ملك بدماغ يجلس على عرش أحمر ويمسك سلسلة ذهبية، تمتد إلى ياقة رجل يستند إلى الجدار، يدخّن ويتفقد ساعته." width="941" height="1672" loading="lazy">
+          <button class="hotspot" type="button" style="--x:77.4%;--y:51.8%" data-clue="1" aria-label="التفصيلة 1: الساعة">1</button>
+          <button class="hotspot" type="button" style="--x:86.6%;--y:43.1%" data-clue="2" aria-label="التفصيلة 2: الياقة الذهبية">2</button>
+          <button class="hotspot" type="button" style="--x:63.8%;--y:65.8%" data-clue="3" aria-label="التفصيلة 3: السلسلة">3</button>
+          <button class="hotspot" type="button" style="--x:34.5%;--y:55%" data-clue="4" aria-label="التفصيلة 4: السيّد">4</button>
+          <button class="hotspot" type="button" style="--x:47.8%;--y:84.9%" data-clue="5" aria-label="التفصيلة 5: الأرض">5</button>
+        </div>
+        <div class="cover-text">
+          <header class="reveal">
+            <p class="kicker">انظر بعناية</p>
+            <h2 id="cover-title">كل تفصيلة على الغلاف <span class="red">تروي القصة</span></h2>
+          </header>
+          <ol class="clues reveal" id="clues">
+            <li data-clue="1"><span class="clue-n">1</span><div><h3>الساعة</h3><p>يتفقد الوقت. هل حان موعد السيجارة التالية؟ كل مدخن يعرف هذه اللحظة.</p></div></li>
+            <li data-clue="2"><span class="clue-n">2</span><div><h3>الياقة الذهبية</h3><p>تلمع كأنها مكافأة. لكنها تبقى ياقة.</p></div></li>
+            <li data-clue="3"><span class="clue-n">3</span><div><h3>السلسلة</h3><p>تتبعها من عنقه. إنها لا تنتهي في يده.</p></div></li>
+            <li data-clue="4"><span class="clue-n">4</span><div><h3>السيّد</h3><p>مرتاح، يبتسم، ولا يستعجل. لا يحتاج أن يلاحقك. أنت دائمًا تعود.</p></div></li>
+            <li data-clue="5"><span class="clue-n">5</span><div><h3>الأرض</h3><p>علب فارغة وأعقاب محترقة. الفاتورة تزداد يومًا بعد يوم.</p></div></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ حاسبة التكلفة ============ -->
+    <section class="band cost" id="cost" aria-labelledby="cost-title">
+      <div class="wrap">
+        <header class="sec-head center reveal">
+          <p class="kicker">احسب التكلفة</p>
+          <h2 id="cost-title">كم يكلّفك <span class="red">السيّد؟</span></h2>
+          <p class="sec-lead">حرّك المؤشر، وأدخل سعر العلبة عندك.</p>
+        </header>
+
+        <div class="calc reveal">
+          <form class="calc-inputs" id="calcForm" onsubmit="return false">
+            <div class="field">
+              <label for="perDay">عدد السجائر يوميًا</label>
+              <div class="range-row">
+                <input type="range" id="perDay" min="1" max="60" value="20">
+                <output id="perDayOut" for="perDay">20</output>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="packPrice">سعر العلبة</label>
+                <div class="money">
+                  <select id="currency" aria-label="العملة">
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="SAR">SAR</option>
+                    <option value="AED">AED</option>
+                    <option value="KWD">KWD</option>
+                    <option value="QAR">QAR</option>
+                    <option value="BHD">BHD</option>
+                    <option value="OMR">OMR</option>
+                    <option value="EGP">EGP</option>
+                    <option value="JOD">JOD</option>
+                    <option value="TRY">TRY</option>
+                  </select>
+                  <input type="number" id="packPrice" dir="ltr" inputmode="decimal" min="0" step="0.25" value="10">
+                </div>
+              </div>
+              <div class="field">
+                <label for="perPack">عدد السجائر في العلبة</label>
+                <input type="number" id="perPack" dir="ltr" inputmode="numeric" min="1" max="50" value="20">
+              </div>
+            </div>
+          </form>
+
+          <div class="calc-results" aria-live="polite">
+            <div class="res"><span class="res-label">كل شهر</span><span class="res-val" id="rMonth">–</span></div>
+            <div class="res"><span class="res-label">كل سنة</span><span class="res-val" id="rYear">–</span></div>
+            <div class="res res-big"><span class="res-label">خلال 10 سنوات</span><span class="res-val" id="rTen">–</span></div>
+            <p class="res-note"><strong id="rCigs">7,300</strong> سيجارة في السنة، كل واحدة منها أُشعلت لأن السيّد أراد ذلك.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ أسئلة يجيب عنها الكتاب ============ -->
+    <section class="band questions" aria-labelledby="q-title">
+      <div class="wrap two-col">
+        <div class="reveal">
+          <p class="kicker">داخل الكتاب</p>
+          <h2 id="q-title">الأسئلة التي <span class="red">لم يجب عنها أحد</span> لأجلك</h2>
+          <p class="sec-lead left">يجيب عنها الكتاب واحدًا تلو الآخر، بكلمات بسيطة.</p>
+        </div>
+        <ul class="q-list reveal">
+          <li>لماذا تبدو أول سيجارة في الصباح ممتعة إلى هذا الحد؟</li>
+          <li>لماذا تظل تنظر إلى الساعة انتظارًا للسيجارة التالية؟</li>
+          <li>لماذا تفشل الإرادة عند كثير من الأذكياء والأقوياء؟</li>
+          <li>من هو المسيطر حقًا حين تُشعل سيجارة؟</li>
+          <li>كيف يمكن أن يصبح الإقلاع سهلًا بدلًا من أن يكون مؤلمًا؟</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ الأسئلة الشائعة ============ -->
+    <section class="band faq" aria-labelledby="faq-title">
+      <div class="wrap narrow">
+        <header class="sec-head center reveal">
+          <p class="kicker">أسئلة شائعة</p>
+          <h2 id="faq-title">قبل أن تبدأ</h2>
+        </header>
+        <div class="faq-list reveal">
+          <details>
+            <summary>هل يجب أن أتوقف عن التدخين قبل أن أبدأ القراءة؟</summary>
+            <p>لا. استمر في التدخين كالمعتاد أثناء القراءة. الكتاب سيخبرك متى يحين الوقت.</p>
+          </details>
+          <details>
+            <summary>كم من الوقت تستغرق القراءة؟</summary>
+            <p>يُنهيه كثير من القراء في يوم واحد. وبمجرد أن تبدأ، يصعب أن تتركه.</p>
+          </details>
+          <details>
+            <summary>هل أحتاج إلى إرادة قوية؟</summary>
+            <p>لا. هذا الكتاب ليس عن محاربة نفسك أو عدّ الأيام. إنه يغيّر طريقة نظرتك إلى السيجارة.</p>
+          </details>
+          <details>
+            <summary>حاولت الإقلاع من قبل وفشلت. هل هذا الكتاب لي؟</summary>
+            <p>نعم. كُتب هذا الكتاب تحديدًا لمن جرّب الإقلاع من قبل.</p>
+          </details>
+          <details>
+            <summary>متى يمكنني الحصول على الكتاب؟</summary>
+            <p>قريبًا. اترك بريدك الإلكتروني أدناه لتكون أول من يعرف.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ احصل على الكتاب ============ -->
+    <section class="band get" id="get" aria-labelledby="get-title">
+      <div class="wrap get-grid">
+        <img class="get-cover reveal" src="assets/cover-ar.jpg" alt="" width="941" height="1672" loading="lazy">
+        <div class="get-text reveal">
+          <p class="kicker">قريبًا</p>
+          <h2 id="get-title">هل أنت مستعد <span class="red">لكسر السلسلة؟</span></h2>
+          <p class="sec-lead left">اترك بريدك الإلكتروني لتكون أول من يعرف عند صدور الكتاب.</p>
+          <form class="notify" id="notifyForm" novalidate>
+            <label for="email" class="sr-only">البريد الإلكتروني</label>
+            <input id="email" name="email" type="email" required placeholder="you@example.com" autocomplete="email" dir="ltr">
+            <button type="submit" class="btn btn-red">أبلغني</button>
+          </form>
+          <p class="form-msg" id="formMsg" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p class="footer-title">السيجارة <em>الأخيرة</em></p>
+    <p>كيف يستعبدك النيكوتين، وكيف تتحرر منه إلى الأبد.</p>
+    <p class="muted">© <span id="year">2026</span> جميع الحقوق محفوظة.</p>
+    <p class="muted"><a class="lang-link" href="index.html" lang="en" hreflang="en">English</a></p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

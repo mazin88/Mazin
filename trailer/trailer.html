@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Trailer renderer — The Slave and the Master</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
+<title>Trailer renderer — The Last Cigarette</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800;900&family=Montserrat:ital,wght@0,700;0,800;0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
 <style>
   html, body { margin: 0; background: #000; overflow: hidden; }
   #stage { position: relative; }
@@ -18,24 +18,71 @@
 </div>
 <script>
 /*
-  Deterministic trailer renderer. render.js calls window.renderAt(seconds) for every
-  frame and screenshots the page. Open trailer.html?w=1280&h=720&preview=1 in a browser
-  to watch it play live.
-
-  Change END_LINE when the book is out (for example "OUT NOW") and render again.
+  Trailer renderer. render.js calls window.renderAt(seconds) for every frame and saves the result.
+  Live preview: trailer.html?w=1280&h=720&preview=1  (add &lang=ar for the Arabic version).
+  The end card text is in the endTitle / endSub / endReady entries below.
 */
-const END_LINE = "COMING SOON";
-const DURATION = 32;
-
 const qs = new URLSearchParams(location.search);
+const AR = qs.get("lang") === "ar";
 const W = +qs.get("w") || 1280;
 const H = +qs.get("h") || 720;
 const TALL = H > W;
-const U = Math.min(W, H) / 720;            // 1 at 1280x720, 1.5 at 1080x1920
+const U = Math.min(W, H) / 720;
+const DURATION = 32;
 
-const COL = {
-  dark: "#110a07", paper: "#fbf4ea", ink: "#1e1612",
-  cream: "#fbf4ea", red: "#d7141b", redLit: "#ff3b40", gold: "#c99328", goldLit: "#f2c45f"
+const COL = { dark: "#110a07", paper: "#fbf4ea", ink: "#1e1612", cream: "#fbf4ea", red: "#d7141b", redLit: "#ff3b40" };
+const CMAP = { w: COL.cream, r: COL.redLit, i: COL.ink };
+const END_PILL = AR ? "قريبًا" : "COMING SOON";
+const COVER_SRC = AR ? "../assets/cover-ar.jpg" : "../assets/cover-en.jpg";
+
+// Cairo has no italic, so the italic part of a font weight is dropped for Arabic.
+function F(weight, size) {
+  return AR ? `${weight.replace(" italic", "")} ${size}px Cairo` : `${weight} ${size}px Montserrat`;
+}
+
+/* On-screen text. A line is a list of [text, colour]: "w" cream, "r" red, "i" ink. */
+const S = AR ? {
+  s1: TALL ? [[["كل يوم،", "w"]], [["تتفقد", "w"]], [["الساعة…", "w"]]] : [[["كل يوم،", "w"]], [["تتفقد الساعة…", "w"]]],
+  s2: TALL ? [[["…تنتظر", "w"]], [["سيجارتك التالية.", "r"]]] : [[["…تنتظر سيجارتك", "w"]], [["التالية.", "r"]]],
+  s3: [[["تظن أنك", "w"]], [["المسيطر.", "w"]]],
+  hit: [[["لست كذلك.", "r"]]],
+  s4: [[["هناك من يمسك", "w"]], [["بالسلسلة.", "r"]]],
+  s5: [[["تعرّف على", "w"]], [["سيّدك.", "r"]]],
+  s6: TALL ? [[["كتاب واحد.", "w"]], [["يوم واحد.", "w"]], [["سيجارة أخيرة.", "r"]]]
+            : [[["كتاب واحد.", "w"]], [["يوم واحد.", "w"]], [["سيجارة", "w"], [" أخيرة.", "r"]]],
+  s7: [[["ولن تُشعلها", "w"], [" أبدًا.", "r"]]],
+  tallReady: [[["رحلتك تبدأ الآن.", "i"]]],
+  ready2: [[["هل أنت مستعد؟", "r"]]],
+  endTitle: [[["السيجارة", "i"]], [["الأخيرة", "r"]]],
+  endSub: [[["دخِّن وأنت تقرأ", "i"]]],
+  endDesc: [[["كيف يستعبدك النيكوتين، وكيف تتحرر منه إلى الأبد.", "i"]]],
+  endReady: [[["رحلتك تبدأ الآن.", "i"]], [["هل أنت مستعد؟", "r"]]],
+} : {
+  s1: TALL ? [[["Every day,", "w"]], [["you check", "w"]], [["the time…", "w"]]] : [[["Every day,", "w"]], [["you check the time…", "w"]]],
+  s2: TALL ? [[["…waiting", "w"]], [["for your next", "w"]], [["cigarette.", "r"]]] : [[["…waiting for your", "w"]], [["next ", "w"], ["cigarette.", "r"]]],
+  s3: TALL ? [[["You think", "w"]], [["you're in", "w"]], [["control.", "w"]]] : [[["You think you're", "w"]], [["in control.", "w"]]],
+  hit: [[["You're not.", "r"]]],
+  s4: TALL ? [[["Someone else", "w"]], [["is holding", "w"]], [["the chain.", "r"]]] : [[["Someone else is", "w"]], [["holding ", "w"], ["the chain.", "r"]]],
+  s5: [[["Meet the", "w"]], [["Master.", "r"]]],
+  s6: TALL ? [[["One book.", "w"]], [["One day.", "w"]], [["One last", "r"]], [["cigarette.", "r"]]] : [[["One book.", "w"]], [["One day.", "w"]], [["One ", "w"], ["last cigarette.", "r"]]],
+  s7: [[["And never ", "w"], ["again.", "r"]]],
+  tallReady: [[["Your journey", "i"]], [["starts now.", "i"]]],
+  ready2: [[["Are you ready?", "r"]]],
+  endTitle: [[["The ", "i"], ["Last", "r"]], [["Cigarette", "i"]]],
+  endSub: [[["Smoke While You Read", "i"]]],
+  endDesc: [[["How nicotine enslaves you… and how to break free for good.", "i"]]],
+  endReady: [[["Your journey starts now.", "i"]], [["Are you ready?", "r"]]],
+};
+
+// Camera framing over the cover (pixels on a 941-wide cover)
+const CAM = TALL ? {
+  watch: { from: [640, 920, 760], to: [705, 930, 720] },
+  chain: { from: [700, 960, 820], to: [330, 980, 880] },
+  master: { from: [310, 920, 760], to: [300, 920, 720] }
+} : {
+  watch: { from: [640, 830, 520], to: [705, 865, 350] },
+  chain: { from: [720, 770, 380], to: [330, 1080, 420] },
+  master: { from: [300, 930, 500], to: [300, 905, 330] }
 };
 
 /* ---------- canvases ---------- */
@@ -60,8 +107,7 @@ function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r);
 
 /* ---------- assets ---------- */
 const cover = new Image();
-cover.src = "../assets/cover.jpg";
-const CW = 941, CH = 1671;
+cover.src = COVER_SRC;
 
 function makeSprite(rgb) {
   const c = document.createElement("canvas"); c.width = c.height = 64;
@@ -69,21 +115,21 @@ function makeSprite(rgb) {
   g.addColorStop(0, `rgba(${rgb},1)`); g.addColorStop(.45, `rgba(${rgb},.45)`); g.addColorStop(1, `rgba(${rgb},0)`);
   x.fillStyle = g; x.fillRect(0, 0, 64, 64); return c;
 }
-const puffLight = makeSprite("214,208,202"), puffDark = makeSprite("92,82,76");
+const puffLight = makeSprite("214,208,202");
 const goldSprite = (() => {
   const c = document.createElement("canvas"); c.width = c.height = 32;
   const x = c.getContext("2d"); const g = x.createRadialGradient(16, 16, 0, 16, 16, 16);
   g.addColorStop(0, "rgba(255,230,160,1)"); g.addColorStop(.25, "rgba(236,182,70,.85)"); g.addColorStop(1, "rgba(201,147,40,0)");
   x.fillStyle = g; x.fillRect(0, 0, 32, 32); return c;
 })();
-const grain = [0, 1, 2, 3].map(k => {
+const grain = (() => {
   const c = document.createElement("canvas"); c.width = c.height = 256;
   const x = c.getContext("2d"); const d = x.createImageData(256, 256);
-  for (let i = 0; i < d.data.length; i += 4) { const v = 128 + (hash(i * .37 + k * 91.3) - .5) * 180; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+  for (let i = 0; i < d.data.length; i += 4) { const v = 128 + (hash(i * .37) - .5) * 180; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
   x.putImageData(d, 0, 0); return c;
-});
+})();
 
-/* ---------- smoke (WebGL) ---------- */
+/* ---------- smoke (WebGL, half resolution) ---------- */
 const gl = smC.getContext("webgl", { premultipliedAlpha: true, alpha: true, preserveDrawingBuffer: true, antialias: false });
 const FRAG = `
 precision highp float;
@@ -116,7 +162,6 @@ const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
 const loc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 const UNI = {}; ["uRes", "uTime", "uColA", "uColB", "uAlpha", "uFocus", "uClear"].forEach(n => UNI[n] = gl.getUniformLocation(prog, n));
-// half-resolution smoke, scaled up by CSS: it is soft anyway
 smC.width = Math.round(W / 2); smC.height = Math.round(H / 2);
 gl.viewport(0, 0, smC.width, smC.height);
 function drawSmoke(t, colA, colB, alpha, focus, clear) {
@@ -127,20 +172,19 @@ function drawSmoke(t, colA, colB, alpha, focus, clear) {
 }
 
 /* ---------- text ---------- */
-// lines: array of lines; each line is an array of [text, colourKey]
+// Draws lines of coloured runs. Arabic runs right to left (x is the right edge, or the centre).
 function textBlock(ctx, t, o) {
-  const {
-    lines, x, y, size, lh = 1.1, align = "center", anchor = "middle", start, stagger = .32, dur = .75,
-    outStart = 1e9, outDur = .5, weight = "900 italic", colors = {}, maxW = W - 120 * U, shadow = null, punch = 0
-  } = o;
+  const { lines, x, y, size, lh = 1.1, align = "center", anchor = "middle", start, stagger = .32, dur = .75,
+    outStart = 1e9, outDur = .5, weight = "900 italic", colors = {}, maxW = W - 120 * U, shadow = null, punch = 0 } = o;
+  const cm = { ...CMAP, ...colors };
   let fs = size;
-  ctx.font = `${weight} ${fs}px Montserrat`;
+  ctx.font = F(weight, fs);
   const widest = Math.max(...lines.map(l => l.reduce((s, [tx]) => s + ctx.measureText(tx).width, 0)));
   if (widest > maxW) fs = size * maxW / widest;
-  ctx.font = `${weight} ${fs}px Montserrat`;
+  ctx.font = F(weight, fs);
   const lineH = fs * lh;
   const blockH = lineH * lines.length;
-  let top = anchor === "middle" ? y - blockH / 2 : anchor === "bottom" ? y - blockH : y;
+  const top = anchor === "middle" ? y - blockH / 2 : anchor === "bottom" ? y - blockH : y;
   const out = 1 - ease(seg(t, outStart, outStart + outDur));
   lines.forEach((line, i) => {
     const t0 = start + i * stagger;
@@ -149,7 +193,6 @@ function textBlock(ctx, t, o) {
     if (a <= 0.001) return;
     const widths = line.map(([tx]) => ctx.measureText(tx).width);
     const total = widths.reduce((s, v) => s + v, 0);
-    let cx = align === "center" ? x - total / 2 : x;
     const baseY = top + lineH * (i + 1) - (lineH - fs) / 2 - fs * .12 + (1 - kin) * 24 * U;
     ctx.save();
     ctx.globalAlpha = a;
@@ -159,27 +202,60 @@ function textBlock(ctx, t, o) {
       ctx.translate(x, baseY - fs * .35); ctx.scale(s, s); ctx.translate(-x, -(baseY - fs * .35));
     }
     if (shadow) { ctx.shadowColor = shadow; ctx.shadowBlur = 22 * U; ctx.shadowOffsetY = 4 * U; }
-    line.forEach(([tx, key], j) => {
-      ctx.fillStyle = colors[key] || key || "#fff";
-      ctx.fillText(tx, cx, baseY);
-      cx += widths[j];
-    });
+    if (AR) {
+      ctx.direction = "rtl"; ctx.textAlign = "right";
+      let edge = align === "center" ? x + total / 2 : x;
+      line.forEach(([tx, key], j) => {
+        ctx.fillStyle = cm[key] || key;
+        ctx.fillText(tx, edge, baseY);
+        edge -= widths[j];
+      });
+    } else {
+      ctx.textAlign = "left";
+      let cx = align === "center" ? x - total / 2 : x;
+      line.forEach(([tx, key], j) => {
+        ctx.fillStyle = cm[key] || key;
+        ctx.fillText(tx, cx, baseY);
+        cx += widths[j];
+      });
+    }
     ctx.restore();
   });
 }
 
-/* ---------- cover shots (slow pan / zoom over the cover art) ---------- */
+// Rounded red label. mode: "center" (ax is the centre), "left" or "right" (ax is that edge).
+function pill(ctx, text, ax, cy, size, alpha, t0, t, mode = "center") {
+  const k = easeOut(seg(t, t0, t0 + .6)); if (k <= 0) return;
+  ctx.save(); ctx.globalAlpha = alpha * k;
+  ctx.font = F("800", size);
+  ctx.letterSpacing = AR ? "0px" : `${size * .2}px`;
+  const tw = ctx.measureText(text).width;
+  const pw = tw + size * 2.2, ph = size * 2.5;
+  const cx = mode === "left" ? ax + pw / 2 : mode === "right" ? ax - pw / 2 : ax;
+  const sc = .9 + .1 * k;
+  ctx.translate(cx, cy); ctx.scale(sc, sc);
+  ctx.shadowColor = "rgba(215,20,27,.45)"; ctx.shadowBlur = 24 * U; ctx.shadowOffsetY = 8 * U;
+  ctx.fillStyle = COL.red; rr(ctx, -pw / 2, -ph / 2, pw, ph, ph / 2); ctx.fill();
+  ctx.shadowColor = "transparent";
+  ctx.fillStyle = "#fff"; ctx.textBaseline = "middle"; ctx.textAlign = "center";
+  ctx.direction = AR ? "rtl" : "ltr";
+  ctx.fillText(text, size * .1, size * .06);
+  ctx.restore();
+}
+
+/* ---------- cover shots (slow pan and zoom over the cover art) ---------- */
 function coverShot(ctx, t, a, b, cam, alpha) {
+  const CW = cover.naturalWidth, CH = cover.naturalHeight, s = CW / 941;
   const k = ease(seg(t, a, b));
-  let cx = lerp(cam.from[0], cam.to[0], k), cy = lerp(cam.from[1], cam.to[1], k);
-  let sh = lerp(cam.from[2], cam.to[2], k);
+  let cx = lerp(cam.from[0], cam.to[0], k) * s;
+  let cy = lerp(cam.from[1], cam.to[1], k) * s;
+  let sh = lerp(cam.from[2], cam.to[2], k) * s;
   let sw = sh * W / H;
   if (sw > CW) { sw = CW; sh = sw * H / W; }
   if (sh > CH) { sh = CH; sw = sh * W / H; }
   cx = clamp(cx, sw / 2, CW - sw / 2); cy = clamp(cy, sh / 2, CH - sh / 2);
   ctx.save(); ctx.globalAlpha = alpha;
   ctx.drawImage(cover, cx - sw / 2, cy - sh / 2, sw, sh, 0, 0, W, H);
-  // moody grade + legibility gradient for the caption
   ctx.fillStyle = "rgba(25,12,6,.22)"; ctx.fillRect(0, 0, W, H);
   const g = ctx.createLinearGradient(0, H, 0, H * (TALL ? .45 : .35));
   g.addColorStop(0, "rgba(12,7,4,.92)"); g.addColorStop(.55, "rgba(12,7,4,.5)"); g.addColorStop(1, "rgba(12,7,4,0)");
@@ -189,15 +265,6 @@ function coverShot(ctx, t, a, b, cam, alpha) {
   ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
   ctx.restore();
 }
-const CAM = TALL ? {
-  watch: { from: [640, 1110, 1100], to: [705, 1000, 800] },
-  chain: { from: [700, 990, 860], to: [330, 1150, 1000] },
-  master: { from: [310, 1110, 1100], to: [300, 1000, 800] }
-} : {
-  watch: { from: [640, 830, 520], to: [705, 865, 350] },
-  chain: { from: [720, 770, 380], to: [330, 1080, 420] },
-  master: { from: [300, 930, 500], to: [300, 905, 330] }
-};
 
 /* ---------- the cigarette ---------- */
 function drawCig(ctx, cx, cy, len, dia, heat, burn, alpha) {
@@ -206,11 +273,9 @@ function drawCig(ctx, cx, cy, len, dia, heat, burn, alpha) {
   const tipW = dia * .85;
   const x1 = x0 + bodyLen - tipW;
   ctx.save(); ctx.globalAlpha = alpha;
-  // paper
   let g = ctx.createLinearGradient(0, cy - dia / 2, 0, cy + dia / 2);
   g.addColorStop(0, "#ffffff"); g.addColorStop(.55, "#efe9e0"); g.addColorStop(1, "#c9bfb2");
   ctx.fillStyle = g; rr(ctx, x0, cy - dia / 2, bodyLen - tipW, dia, [dia * .2, 0, 0, dia * .2]); ctx.fill();
-  // filter
   const fl = len * .3;
   g = ctx.createLinearGradient(0, cy - dia / 2, 0, cy + dia / 2);
   g.addColorStop(0, "#eaa457"); g.addColorStop(1, "#b46a27");
@@ -218,9 +283,7 @@ function drawCig(ctx, cx, cy, len, dia, heat, burn, alpha) {
   ctx.fillStyle = "rgba(110,55,10,.35)";
   for (let i = 0; i < 70; i++) { ctx.beginPath(); ctx.arc(x0 + hash(i) * fl, cy - dia / 2 + hash(i + 50) * dia, dia * .045, 0, 7); ctx.fill(); }
   ctx.fillStyle = "#d9b25a"; ctx.fillRect(x0 + fl - dia * .16, cy - dia / 2, dia * .16, dia);
-  // burn line
   ctx.fillStyle = "rgba(60,30,15,.85)"; ctx.fillRect(x1 - dia * .06, cy - dia / 2, dia * .08, dia);
-  // ember / ash tip
   const hot = clamp(heat, 0, 1);
   if (hot > 0) { ctx.shadowColor = `rgba(255,105,30,${.95 * hot})`; ctx.shadowBlur = dia * 2.6 * hot; }
   g = ctx.createRadialGradient(x1 + tipW * .45, cy, 0, x1 + tipW * .45, cy, dia * .8);
@@ -246,7 +309,7 @@ function tipSmoke(ctx, t, tip, from, until, scale, alpha, sprite, burst = 1) {
   ctx.globalAlpha = 1;
 }
 
-/* ---------- gold dust + burnt corner for the end card ---------- */
+/* ---------- gold dust, burnt crack, swoosh (end card) ---------- */
 const DUST = Array.from({ length: 170 }, (_, i) => ({
   u0: hash(i * 3.1), off: (hash(i * 7.7) + hash(i * 1.3) - 1) * .09, r: (1.3 + Math.pow(hash(i * 5.9), 3) * 6) * U,
   a: .35 + hash(i * 2.2) * .65, tw: .6 + hash(i * 4.4) * 1.8, ph: hash(i * 8.8) * 6.28, sp: .006 + hash(i * 6.6) * .01
@@ -273,11 +336,13 @@ const CRACK = (() => {
   }
   return pts;
 })();
+// Top-right crack for English, mirrored to the top-left for Arabic
 function drawCrack(ctx, t, alpha) {
   const bw = (TALL ? .55 : .3) * W, s = bw / 400;
-  ctx.save(); ctx.globalAlpha = alpha; ctx.translate(W - bw, 0); ctx.scale(s, s);
-  ctx.beginPath(); CRACK.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
-  const path = new Path2D(); CRACK.forEach(([x, y], i) => i ? path.lineTo(x, y) : path.moveTo(x, y));
+  ctx.save(); ctx.globalAlpha = alpha;
+  if (AR) { ctx.translate(bw, 0); ctx.scale(-s, s); } else { ctx.translate(W - bw, 0); ctx.scale(s, s); }
+  const path = new Path2D();
+  CRACK.forEach(([x, y], i) => (i ? path.lineTo(x, y) : path.moveTo(x, y)));
   const area = new Path2D(path); area.lineTo(406, -6); area.closePath();
   ctx.fillStyle = "rgba(150,90,40,.12)"; ctx.fill(area);
   ctx.lineJoin = "round"; ctx.lineCap = "round";
@@ -295,22 +360,8 @@ function swoosh(ctx, x, y, w, alpha) {
   ctx.fillStyle = COL.red; ctx.fill(new Path2D("M300 8 C 400 2, 500 8, 572 24 C 500 13, 400 8, 300 8 Z"));
   ctx.restore();
 }
-function pill(ctx, text, cx, cy, size, alpha, t0, t) {
-  const k = easeOut(seg(t, t0, t0 + .6)); if (k <= 0) return;
-  ctx.save(); ctx.globalAlpha = alpha * k;
-  ctx.font = `800 ${size}px Montserrat`; ctx.letterSpacing = `${size * .22}px`;
-  const tw = ctx.measureText(text).width;
-  const pw = tw + size * 2.2, ph = size * 2.5;
-  const sc = .9 + .1 * k;
-  ctx.translate(cx, cy); ctx.scale(sc, sc);
-  ctx.shadowColor = "rgba(215,20,27,.45)"; ctx.shadowBlur = 24 * U; ctx.shadowOffsetY = 8 * U;
-  ctx.fillStyle = COL.red; rr(ctx, -pw / 2, -ph / 2, pw, ph, ph / 2); ctx.fill();
-  ctx.shadowColor = "transparent"; ctx.fillStyle = "#fff"; ctx.textBaseline = "middle";
-  ctx.fillText(text, -tw / 2 + size * .11, size * .06);
-  ctx.restore();
-}
 
-/* ---------- scene timings ---------- */
+/* ---------- scene timings (seconds) ---------- */
 const T = { s1: [0, 4.4], s2: [4.0, 8.5], s3: [8.3, 11.5], s4: [11.3, 15.3], s5: [15.1, 19.3], s6: [19.1, 23.5], s7: [23.3, 26.8], end: 26.4 };
 
 /* ---------- main render ---------- */
@@ -332,17 +383,20 @@ function renderAt(t) {
   const light = ease(seg(t, T.end, T.end + .9));        // paper end card
   if (light > 0) { bg.globalAlpha = light; bg.fillStyle = COL.paper; bg.fillRect(0, 0, W, H); bg.globalAlpha = 1; }
 
-  // smoke layer
+  // smoke layer; it clears on the side where the end-card text sits
   const img = Math.max(a2, a4, a5);
   const colA = [lerp(.55, .31, light), lerp(.52, .27, light), lerp(.5, .25, light)];
   const colB = [lerp(.86, .6, light), lerp(.83, .55, light), lerp(.8, .52, light)];
   const sAlpha = lerp(.55, .42, light) * (1 - img * .65);
-  const focus = light > .5 ? (TALL ? [.5, .55] : [.32, .5]) : [.5, .5];
+  const focus = light > .5 ? (TALL ? [.5, .55] : [AR ? .68 : .32, .5]) : [.5, .5];
   drawSmoke(t, colA, colB, sAlpha, focus, light > .5 ? .55 : .35);
 
-  const textW = { colors: { w: COL.cream, r: COL.redLit } };
   const sh = "rgba(0,0,0,.55)";
-  const big = TALL ? 92 : 64, huge = TALL ? 150 : 104;
+  const big = TALL ? 92 : 64;
+  const huge = TALL ? 150 : 104;
+  const capX = TALL ? W / 2 : (AR ? W - 80 * U : 80 * U);       // captions sit on the reading side
+  const capAlign = TALL ? "center" : (AR ? "right" : "left");
+  const capY = TALL ? H - 400 : H - 70 * U;
 
   /* S1: every day, you check the time */
   const a1 = win(t, ...T.s1, .01, .6);
@@ -350,28 +404,23 @@ function renderAt(t) {
     const heat = .85 + .15 * Math.sin(t * 13) * Math.sin(t * 7.3);
     const tip = drawCig(fg, W / 2, H * (TALL ? .72 : .78), TALL ? 640 : 340 * U, TALL ? 24 : 17 * U, heat, 0, a1);
     tipSmoke(fg, t, tip, -3.4, 99, U * (TALL ? 1.1 : 1), a1, puffLight);
-    textBlock(fg, t, { ...textW, lines: TALL ? [[["Every day,", "w"]], [["you check", "w"]], [["the time…", "w"]]] : [[["Every day,", "w"]], [["you check the time…", "w"]]],
-      x: W / 2, y: H * (TALL ? .4 : .4), size: big, start: .5, stagger: .9, outStart: 3.8, shadow: sh });
+    textBlock(fg, t, { lines: S.s1, x: W / 2, y: H * .4, size: big, start: .5, stagger: .9, outStart: 3.8, shadow: sh });
   }
 
   /* S2: waiting for your next cigarette (the watch) */
   if (a2 > 0) {
-    textBlock(fg, t, { ...textW, lines: TALL ? [[["…waiting", "w"]], [["for your next", "w"]], [["cigarette.", "r"]]] : [[["…waiting for your", "w"]], [["next ", "w"], ["cigarette.", "r"]]],
-      x: TALL ? W / 2 : 80 * U, y: TALL ? H - 400 : H - 70 * U, anchor: "bottom", align: TALL ? "center" : "left",
-      size: big, start: 4.7, stagger: .45, outStart: 7.9, shadow: sh });
+    textBlock(fg, t, { lines: S.s2, x: capX, y: capY, anchor: "bottom", align: capAlign, size: big, start: 4.7, stagger: .45, outStart: 7.9, shadow: sh });
   }
 
   /* S3: you think you're in control. You're not. */
   const a3 = win(t, ...T.s3, .3, .4);
   if (a3 > 0) {
-    textBlock(fg, t, { ...textW, lines: TALL ? [[["You think", "w"]], [["you're in", "w"]], [["control.", "w"]]] : [[["You think you're", "w"]], [["in control.", "w"]]],
-      x: W / 2, y: H / 2, size: big, start: 8.6, stagger: .4, outStart: 9.75, outDur: .25, shadow: sh });
-    // the hit
+    textBlock(fg, t, { lines: S.s3, x: W / 2, y: H / 2, size: big, start: 8.6, stagger: .4, outStart: 9.75, outDur: .25, shadow: sh });
     const hitK = seg(t, 10.0, 10.08);
     if (hitK > 0) {
       const shake = (1 - seg(t, 10.0, 10.35)) * 7 * U;
       fg.save(); fg.translate(Math.sin(t * 90) * shake, Math.cos(t * 70) * shake);
-      textBlock(fg, t, { colors: { r: COL.redLit }, lines: [[["You're not.", "r"]]], x: W / 2, y: H / 2, size: huge, start: 10.0, dur: .2, outStart: 11.05, outDur: .4, punch: .35, shadow: "rgba(255,40,40,.35)" });
+      textBlock(fg, t, { lines: S.hit, x: W / 2, y: H / 2, size: huge, start: 10.0, dur: .2, outStart: 11.05, outDur: .4, punch: .35, shadow: "rgba(255,40,40,.35)" });
       fg.restore();
       const flash = (1 - seg(t, 10.0, 10.6)) * .35;
       if (flash > 0) { fg.fillStyle = `rgba(215,20,27,${flash})`; fg.fillRect(0, 0, W, H); }
@@ -380,23 +429,18 @@ function renderAt(t) {
 
   /* S4: someone else is holding the chain */
   if (a4 > 0) {
-    textBlock(fg, t, { ...textW, lines: TALL ? [[["Someone else", "w"]], [["is holding", "w"]], [["the chain.", "r"]]] : [[["Someone else is", "w"]], [["holding ", "w"], ["the chain.", "r"]]],
-      x: TALL ? W / 2 : 80 * U, y: TALL ? H - 400 : H - 70 * U, anchor: "bottom", align: TALL ? "center" : "left",
-      size: big, start: 12.0, stagger: .45, outStart: 14.7, shadow: sh });
+    textBlock(fg, t, { lines: S.s4, x: capX, y: capY, anchor: "bottom", align: capAlign, size: big, start: 12.0, stagger: .45, outStart: 14.7, shadow: sh });
   }
 
   /* S5: meet the Master */
   if (a5 > 0) {
-    textBlock(fg, t, { ...textW, lines: [[["Meet the", "w"]], [["Master.", "r"]]],
-      x: TALL ? W / 2 : 80 * U, y: TALL ? H - 400 : H - 70 * U, anchor: "bottom", align: TALL ? "center" : "left",
-      size: TALL ? 120 : 84, start: 15.7, stagger: .55, outStart: 18.7, shadow: sh });
+    textBlock(fg, t, { lines: S.s5, x: capX, y: capY, anchor: "bottom", align: capAlign, size: TALL ? 120 : 84, start: 15.7, stagger: .55, outStart: 18.7, shadow: sh });
   }
 
   /* S6: one book, one day, one last cigarette */
   const a6 = win(t, ...T.s6, .3, .5);
   if (a6 > 0) {
-    textBlock(fg, t, { ...textW, lines: TALL ? [[["One book.", "w"]], [["One day.", "w"]], [["One last", "r"]], [["cigarette.", "r"]]] : [[["One book.", "w"]], [["One day.", "w"]], [["One ", "w"], ["last cigarette.", "r"]]],
-      x: W / 2, y: H / 2, size: TALL ? 104 : 70, lh: 1.18, start: 19.4, stagger: TALL ? .8 : 1.2, dur: .7, outStart: 23.0, shadow: sh });
+    textBlock(fg, t, { lines: S.s6, x: W / 2, y: H / 2, size: TALL ? 104 : 70, lh: 1.18, start: 19.4, stagger: TALL ? .8 : 1.2, dur: .7, outStart: 23.0, shadow: sh });
   }
 
   /* S7: the last cigarette goes out */
@@ -407,7 +451,7 @@ function renderAt(t) {
     const tip = drawCig(fg, W / 2, H * (TALL ? .6 : .64), TALL ? 840 : 440 * U, TALL ? 36 : 24 * U, heat, .08 + .06 * seg(t, 23.3, 24.0), a7);
     tipSmoke(fg, t, tip, 20, 24.0, U * 1.2, a7, puffLight);
     tipSmoke(fg, t, tip, 24.0, 24.5, U * 1.5, a7 * 1.4, puffLight, 1.6);
-    textBlock(fg, t, { ...textW, lines: [[["And never ", "w"], ["again.", "r"]]], x: W / 2, y: H * (TALL ? .4 : .36), size: big, start: 24.9, dur: .9, outStart: 26.2, shadow: sh });
+    textBlock(fg, t, { lines: S.s7, x: W / 2, y: H * (TALL ? .4 : .36), size: big, start: 24.9, dur: .9, outStart: 26.2, shadow: sh });
   }
 
   /* END CARD on paper */
@@ -415,52 +459,51 @@ function renderAt(t) {
     drawDust(fg, t, light);
     drawCrack(fg, t, light);
     const ck = easeOut(seg(t, 26.9, 28.0));
+    const CW = cover.naturalWidth, CH = cover.naturalHeight;
     const coverH = TALL ? 1000 : H * .78;
     const coverW = coverH * CW / CH;
-    const ccx = TALL ? W / 2 : W * .735, ccy = TALL ? 900 : H / 2;
+    const ccx = TALL ? W / 2 : (AR ? W * .265 : W * .735), ccy = TALL ? 900 : H / 2;
     if (ck > 0) {
       fg.save(); fg.globalAlpha = ck;
-      fg.translate(ccx, ccy + (1 - ck) * 30 * U); fg.rotate((-2.5 + 1.5 * ck) * Math.PI / 180); const sc = .94 + .06 * ck; fg.scale(sc, sc);
+      fg.translate(ccx, ccy + (1 - ck) * 30 * U); fg.rotate((-2.5 + 1.5 * ck) * Math.PI / 180);
+      const sc = .94 + .06 * ck; fg.scale(sc, sc);
       fg.shadowColor = "rgba(30,22,18,.45)"; fg.shadowBlur = 50 * U; fg.shadowOffsetY = 26 * U;
       fg.drawImage(cover, -coverW / 2, -coverH / 2, coverW, coverH);
       fg.restore();
     }
     const ink = { colors: { i: COL.ink, r: COL.red } };
     if (TALL) {
-      textBlock(fg, t, { ...ink, lines: [[["Your journey", "i"]], [["starts now.", "i"]]], x: W / 2, y: 250, size: 84, start: 27.3, stagger: .3 });
-      textBlock(fg, t, { ...ink, lines: [[["Are you ready?", "r"]]], x: W / 2, y: 1500, size: 88, start: 28.6 });
-      pill(fg, END_LINE, W / 2, 1650, 34, light, 29.6, t);
-    } else {
+      textBlock(fg, t, { ...ink, lines: S.tallReady, x: W / 2, y: 250, size: 84, start: 27.3, stagger: .3 });
+      textBlock(fg, t, { ...ink, lines: S.ready2, x: W / 2, y: 1500, size: 88, start: 28.6 });
+      pill(fg, END_PILL, W / 2, 1650, 34, light, 29.6, t);
+    } else if (!AR) {
+      // English, landscape: text on the left, cover on the right
       const lx = W * .085, k = H / 720;
-      textBlock(fg, t, { ...ink, lines: [[["The Slave", "i"]]], x: lx, y: 104 * k, anchor: "top", align: "left", size: 78 * k, start: 27.2 });
-      // "and the Master"
-      (function () {
-        const e = easeOut(seg(t, 27.45, 28.2)); if (e <= 0) return;
-        fg.save(); fg.globalAlpha = e; if (e < 1) fg.filter = `blur(${(1 - e) * 8}px)`;
-        const yb = (264 + (1 - e) * 20) * k;
-        fg.font = `800 italic ${40 * k}px Montserrat`; fg.fillStyle = COL.ink; fg.fillText("and the", lx, yb);
-        const w1 = fg.measureText("and the ").width;
-        fg.font = `900 italic ${78 * k}px Montserrat`; fg.fillStyle = COL.red; fg.fillText("Master", lx + w1, yb);
-        fg.restore();
-      })();
-      swoosh(fg, lx - 20 * k, 276 * k, 430 * k, easeOut(seg(t, 27.9, 28.5)));
-      textBlock(fg, t, { colors: { i: COL.ink, r: COL.red }, weight: "700 italic", lines: [[["How ", "i"], ["Nicotine", "r"], [" Enslaves You…", "i"]], [["and How to Break Free for Good", "i"]]],
-        x: lx, y: 318 * k, anchor: "top", align: "left", size: 25 * k, lh: 1.35, start: 28.1, stagger: .2, maxW: W * .5 });
-      textBlock(fg, t, { ...ink, lines: [[["Your journey starts now.", "i"]], [["Are you ready?", "r"]]], x: lx, y: 410 * k, anchor: "top", align: "left", size: 34 * k, lh: 1.3, start: 28.8, stagger: .5, maxW: W * .5 });
-      pill(fg, END_LINE, lx + 104 * k, 556 * k, 17 * k, light, 29.8, t);
+      textBlock(fg, t, { ...ink, lines: S.endTitle, x: lx, y: 88 * k, anchor: "top", align: "left", size: 88 * k, lh: 1.02, weight: "900 italic", start: 27.2, stagger: .35, maxW: W * .5 });
+      textBlock(fg, t, { ...ink, lines: S.endSub, x: lx, y: 290 * k, anchor: "top", align: "left", size: 28 * k, lh: 1.3, weight: "700 italic", start: 28.0, maxW: W * .5 });
+      textBlock(fg, t, { ...ink, lines: S.endDesc, x: lx, y: 336 * k, anchor: "top", align: "left", size: 19 * k, lh: 1.3, weight: "700 italic", start: 28.2, maxW: W * .5 });
+      textBlock(fg, t, { ...ink, lines: S.endReady, x: lx, y: 400 * k, anchor: "top", align: "left", size: 34 * k, lh: 1.3, start: 28.8, stagger: .5, maxW: W * .5 });
+      pill(fg, END_PILL, lx, 540 * k, 17 * k, light, 29.8, t, "left");
+    } else {
+      // Arabic, landscape: text on the right, cover on the left
+      const rx = W - W * .085, k = H / 720;
+      textBlock(fg, t, { ...ink, lines: S.endTitle, x: rx, y: 80 * k, anchor: "top", align: "right", size: 96 * k, lh: 1.25, weight: "900 italic", start: 27.2, stagger: .35, maxW: W * .5 });
+      textBlock(fg, t, { ...ink, lines: S.endSub, x: rx, y: 350 * k, anchor: "top", align: "right", size: 40 * k, lh: 1.3, weight: "700 italic", start: 28.0, maxW: W * .5 });
+      textBlock(fg, t, { ...ink, lines: S.endDesc, x: rx, y: 420 * k, anchor: "top", align: "right", size: 22 * k, lh: 1.4, weight: "700 italic", start: 28.2, maxW: W * .5 });
+      textBlock(fg, t, { ...ink, lines: S.endReady, x: rx, y: 490 * k, anchor: "top", align: "right", size: 36 * k, lh: 1.5, start: 28.8, stagger: .5, maxW: W * .5 });
+      pill(fg, END_PILL, rx, 660 * k, 18 * k, light, 29.8, t, "right");
     }
   }
 
-  // dark-scene grain and vignette
+  // dark-scene vignette and a light, still grain (it hides banding and costs little to encode)
   const dark = 1 - light;
   if (dark > 0) {
     fg.save();
     const v = fg.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .3, W / 2, H / 2, Math.max(W, H) * .75);
     v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, `rgba(0,0,0,${.5 * dark})`);
     fg.fillStyle = v; fg.fillRect(0, 0, W, H);
-    // a light, still grain: it hides banding in the dark gradients and costs almost nothing to encode
     fg.globalCompositeOperation = "overlay"; fg.globalAlpha = .09 * dark;
-    fg.fillStyle = fg.createPattern(grain[0], "repeat"); fg.fillRect(0, 0, W, H);
+    fg.fillStyle = fg.createPattern(grain, "repeat"); fg.fillRect(0, 0, W, H);
     fg.restore();
   }
   // fade in from black at the very start
@@ -473,7 +516,10 @@ function renderAt(t) {
 window.renderAt = renderAt;
 window.trailerReady = (async () => {
   await new Promise((res, rej) => { if (cover.complete && cover.naturalWidth) res(); else { cover.onload = res; cover.onerror = rej; } });
-  await Promise.all(["700 italic 20px Montserrat", "800 italic 20px Montserrat", "900 italic 20px Montserrat", "800 20px Montserrat", "900 20px Montserrat"].map(f => document.fonts.load(f)));
+  const loads = AR
+    ? ["700 40px Cairo", "800 40px Cairo", "900 40px Cairo"]
+    : ["700 italic 20px Montserrat", "800 italic 20px Montserrat", "900 italic 20px Montserrat", "800 20px Montserrat", "900 20px Montserrat"];
+  await Promise.all(loads.map(f => document.fonts.load(f)));
   await document.fonts.ready;
   renderAt(0);
   return true;

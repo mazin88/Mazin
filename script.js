@@ -539,6 +539,18 @@
      To collect emails, create a free form at formspree.io and
      paste its address below, e.g. "https://formspree.io/f/abcdwxyz".
      ========================================================= */
+    const AR = document.documentElement.lang === "ar";
+  const MSG = AR ? {
+    bad: "يرجى إدخال بريد إلكتروني صحيح، مثل name@example.com.",
+    sending: "جارٍ الإرسال…",
+    fail: "لم تنجح العملية. تحقّق من اتصالك وحاول مرة أخرى.",
+    ok: "شكرًا لك! سنخبرك فور صدور الكتاب."
+  } : {
+    bad: "Please enter a valid email address, like name@example.com.",
+    sending: "Sending…",
+    fail: "That didn't go through. Please check your connection and try again.",
+    ok: "Thank you! We'll let you know as soon as the book is out."
+  };
   const NOTIFY_ENDPOINT = "";
   const form = $("#notifyForm");
   const msg = $("#formMsg");
@@ -548,13 +560,13 @@
       const email = $("#email");
       msg.classList.remove("err");
       if (!email.value || !email.checkValidity()) {
-        msg.textContent = "Please enter a valid email address, like name@example.com.";
+        msg.textContent = MSG.bad;
         msg.classList.add("err");
         email.focus();
         return;
       }
       if (NOTIFY_ENDPOINT) {
-        msg.textContent = "Sending…";
+        msg.textContent = MSG.sending;
         try {
           const res = await fetch(NOTIFY_ENDPOINT, {
             method: "POST",
@@ -563,12 +575,12 @@
           });
           if (!res.ok) throw new Error(String(res.status));
         } catch (err) {
-          msg.textContent = "That didn't go through. Please check your connection and try again.";
+          msg.textContent = MSG.fail;
           msg.classList.add("err");
           return;
         }
       }
-      msg.textContent = "Thank you! We'll let you know as soon as the book is out.";
+      msg.textContent = MSG.ok;
       form.reset();
     });
   }

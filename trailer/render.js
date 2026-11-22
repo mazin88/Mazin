@@ -18,7 +18,7 @@ const W = Number(w), H = Number(h);
   const browser = await chromium.launch({ args: ["--use-gl=swiftshader", "--enable-webgl", "--ignore-gpu-blocklist"] });
   const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
   page.on("pageerror", (e) => console.error("page error:", e.message));
-  await page.goto("file://" + path.join(__dirname, "trailer.html") + `?w=${W}&h=${H}`);
+  await page.goto("file://" + path.join(__dirname, "trailer.html") + `?w=${W}&h=${H}&lang=${process.env.TRAILER_LANG || "en"}`);
   await page.evaluate(() => window.trailerReady);
 
   const frame = async (t, type = "jpeg") => {
