@@ -491,3 +491,7 @@ h3 { font-family: var(--font-display); }
   .ready { height: auto; }
   .ready-pin { position: relative; height: auto; padding-block: 18vh; }
 }
+
+/* Sign-up messages from Formspree: the field error sits inside the form, on its own line */
+.notify { flex-wrap: wrap; }
+.notify .form-msg { flex: 0 0 100%; margin-top: 0; }

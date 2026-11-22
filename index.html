@@ -314,12 +314,14 @@
           <p class="kicker">Coming soon</p>
           <h2 id="get-title">Ready to <span class="red">break the chain?</span></h2>
           <p class="sec-lead left">Leave your email and be the first to know when the book is out.</p>
-          <form class="notify" id="notifyForm" novalidate>
+          <form class="notify" id="notifyForm" action="https://formspree.io/f/mbgozngw" method="POST">
             <label for="email" class="sr-only">Email address</label>
-            <input id="email" name="email" type="email" required placeholder="you@example.com" autocomplete="email">
-            <button type="submit" class="btn btn-red">Notify me</button>
+            <input id="email" name="email" type="email" required placeholder="you@example.com" autocomplete="email" data-fs-field>
+            <button type="submit" class="btn btn-red" data-fs-submit-btn>Notify me</button>
+            <p class="form-msg err" data-fs-error="email">Please enter a valid email address, like name@example.com.</p>
           </form>
-          <p class="form-msg" id="formMsg" role="status" aria-live="polite"></p>
+          <p class="form-msg err" data-fs-error>Something went wrong. Please check your connection and try again.</p>
+          <p class="form-msg" data-fs-success>Thank you! We'll let you know as soon as the book is out.</p>
         </div>
       </div>
     </section>
@@ -333,6 +335,10 @@
     <p class="muted"><a class="lang-link" href="ar.html" lang="ar" hreflang="ar">العربية</a></p>
   </footer>
 
+  <script>
+    window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
+  </script>
+  <script src="https://unpkg.com/@formspree/ajax@1.1.5" defer></script>
   <script src="script.js"></script>
 </body>
 </html>
