@@ -421,43 +421,64 @@
   }
 
   /* =========================================================
-     6. TRAILER PLAYER
+     6. VIDEO PLAYERS  (the trailer and "Follow the smoke")
+        Each .player has a <video> and a .play button.
+        - data-src-wide + data-src-tall: wide on computers, vertical on phones (the trailer)
+        - data-src: one vertical video, always shown tall
+        Starting one video pauses the others.
      ========================================================= */
-  const player = $("#player");
-  const video = $("#trailerVideo");
-  const playBtn = $("#playBtn");
-  if (player && video && playBtn) {
-    const tallQuery = window.matchMedia("(max-width: 640px) and (orientation: portrait)");
-    const layout = () => {
-      if (video.getAttribute("src")) return; // don't swap once it has started
-      const tall = tallQuery.matches;
-      player.classList.toggle("tall", tall);
-      video.poster = tall ? video.dataset.posterTall : video.dataset.posterWide;
-    };
-    layout();
-    if (tallQuery.addEventListener) tallQuery.addEventListener("change", layout);
+  const players = $$(".player").filter((p) => $("video", p) && $(".play", p));
+  const pauseOthers = (current) => players.forEach((p) => {
+    const v = $("video", p);
+    if (p !== current && !v.paused) v.pause();
+  });
+  const tallQuery = window.matchMedia("(max-width: 640px) and (orientation: portrait)");
 
-    const startTrailer = () => {
+  players.forEach((player) => {
+    const video = $("video", player);
+    const playBtn = $(".play", player);
+    const twoSizes = Boolean(video.dataset.srcWide && video.dataset.srcTall);
+
+    if (twoSizes) {
+      const layout = () => {
+        if (video.getAttribute("src")) return; // don't swap once it has started
+        const tall = tallQuery.matches;
+        player.classList.toggle("tall", tall);
+        video.poster = tall ? video.dataset.posterTall : video.dataset.posterWide;
+      };
+      layout();
+      if (tallQuery.addEventListener) tallQuery.addEventListener("change", layout);
+    }
+
+    const start = () => {
       if (!video.getAttribute("src")) {
-        video.src = player.classList.contains("tall") ? video.dataset.srcTall : video.dataset.srcWide;
+        video.src = twoSizes
+          ? (player.classList.contains("tall") ? video.dataset.srcTall : video.dataset.srcWide)
+          : video.dataset.src;
       }
+      pauseOthers(player);
       video.controls = true;
       player.classList.add("playing");
       const p = video.play();
       if (p && p.catch) p.catch(() => { player.classList.remove("playing"); video.controls = false; });
     };
-    playBtn.addEventListener("click", startTrailer);
-    $$("[data-play-trailer]").forEach((a) => a.addEventListener("click", (e) => {
-      e.preventDefault();
-      $("#trailer").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
-      startTrailer();
-    }));
+    playBtn.addEventListener("click", start);
+    video.addEventListener("play", () => pauseOthers(player));
     video.addEventListener("ended", () => {
       player.classList.remove("playing");
       video.controls = false;
       video.load(); // back to the poster
     });
-  }
+
+    // the hero's "Watch the trailer" button
+    if (player.id === "player") {
+      $$("[data-play-trailer]").forEach((a) => a.addEventListener("click", (e) => {
+        e.preventDefault();
+        $("#trailer").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+        start();
+      }));
+    }
+  });
 
   /* =========================================================
      7. COVER CLUES

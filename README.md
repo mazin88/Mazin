@@ -15,11 +15,13 @@ The site is in two languages. It is a plain static site (HTML, CSS and JavaScrip
 | `ar.html` | Arabic page |
 | `styles.css` | Colours, fonts and layout, shared by both pages |
 | `ar.css` | Arabic font and right-to-left changes (loaded only on `ar.html`) |
-| `script.js` | Smoke and gold-dust animation, scroll effects, trailer player, cover clue spots, cost calculator, sign-up form. Works for both languages |
+| `script.js` | Smoke and gold-dust animation, scroll effects, video players, cover clue spots, cost calculator, sign-up form. Works for both languages |
 | `assets/cover-en.jpg`, `assets/cover-ar.jpg` | The book cover in each language. Replace these files when the final covers are ready |
 | `assets/trailer.mp4`, `assets/trailer-vertical.mp4` | English trailer: wide for computers, vertical for phones and for Instagram Reels, TikTok and YouTube Shorts |
 | `assets/trailer-ar.mp4`, `assets/trailer-ar-vertical.mp4` | Arabic trailer, in the same two formats |
 | `assets/trailer-*poster*.jpg` | Still images shown before each trailer plays |
+| `assets/journey-en.mp4`, `assets/journey-ar.mp4` | "Follow the smoke": a vertical video of about 20 seconds, in the section after the trailer (English on `index.html`, Arabic on `ar.html`) |
+| `assets/journey-poster.jpg` | Still image shown before "Follow the smoke" plays (the same for both languages) |
 | `trailer/` | Source used to make the trailers (see below) |
 
 ## Putting the site online (GitHub Pages, free)
@@ -60,6 +62,16 @@ Each video takes a few minutes. The poster images are single frames from the end
 The trailers end with a **29% OFF** label (Arabic: **خصم 29%**). To change it, edit `END_PILL` in `trailer/trailer.html`, then render again.
 
 This needs Node.js with Playwright, Python 3 with NumPy, and ffmpeg.
+
+## The "Follow the smoke" video
+
+The man from the cover smokes, the camera follows the smoke into his lungs (a dark tar cave where the Master waits), a ball of light becomes a book, and the cave turns into a sunny forest. It ends on the real cover with "Order the book now. Change your life forever." and a short voice line.
+
+- The story part (15 seconds, no words) was made with Higgsfield (Seedance 2.5), from the cover's characters.
+- The end card, the voice line (ElevenLabs, through Higgsfield) and the sound mix were added afterwards for each language. The music under the end card comes from our own trailer soundtrack.
+- The files in `assets/` are smaller copies for the website. The full-quality versions for social media are kept outside this repository.
+
+To add another video like this, copy the `journey` section in both pages and change `data-src` and `poster`. Any `.player` with a `data-src` works without changes to `script.js`.
 
 ## Before release
 
