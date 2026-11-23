@@ -34,13 +34,14 @@ The site is in two languages. It is a plain static site (HTML, CSS and JavaScrip
 
 To view the site without hosting, download the repository as a ZIP, unzip it and open `index.html` in a browser. Clicking `index.html` inside GitHub only shows the code.
 
-## Collecting emails
+## Email sign-up and the 29% discount
 
-The "Notify me" form does not save emails yet. To collect them:
+The sign-up form at the bottom of both pages is connected to Formspree (form `mbgozngw`) through the `@formspree/ajax` library, loaded in each page. Each sign-up also records the page language (`en` or `ar`).
 
-1. Create a free form at <https://formspree.io>.
-2. Copy its address (it looks like `https://formspree.io/f/abcdwxyz`).
-3. In `script.js`, paste it into `const NOTIFY_ENDPOINT = "";` between the quotes.
+The page tells people to check their inbox for a 29% discount code. The email that sends it is set up outside this site, in one of these:
+
+- **Formspree:** turn on the form's automatic reply and paste in the discount email.
+- **An email service** (MailerLite or Mailchimp): create a welcome email that goes to each new subscriber.
 
 ## Remaking the trailers
 
@@ -56,7 +57,7 @@ TRAILER_LANG=ar node trailer/render.js video 1080 1920 assets/trailer-ar-vertica
 
 Each video takes a few minutes. The poster images are single frames from the end card (`stills` mode, time `31.5`). To preview a trailer live in a browser, open `trailer/trailer.html?w=1280&h=720&preview=1`, adding `&lang=ar` for the Arabic version.
 
-The trailer ends with **COMING SOON** (Arabic: **قريبًا**). Change `END_PILL` in `trailer/trailer.html` when the book is out, then render again.
+The trailers end with a **29% OFF** label (Arabic: **خصم 29%**). To change it, edit `END_PILL` in `trailer/trailer.html`, then render again.
 
 This needs Node.js with Playwright, Python 3 with NumPy, and ffmpeg.
 
@@ -64,5 +65,5 @@ This needs Node.js with Playwright, Python 3 with NumPy, and ffmpeg.
 
 - Have a native Arabic speaker proofread `ar.html` and the Arabic trailer text.
 - Replace the "Get the book" buttons with the real sales links.
-- Connect the email form (see above).
+- Switch on the automatic email that sends the 29% discount code (see above).
 - Check the FAQ and "Inside the book" questions against the final book.

@@ -535,10 +535,11 @@
   }
 
   /* =========================================================
-     9. "NOTIFY ME" FORM
+     9. 29% DISCOUNT SIGN-UP
      Sent to Formspree form mbgozngw by the @formspree/ajax library
      (loaded in the HTML). Each page's own text is shown for success
-     and errors. The language is sent with every sign-up.
+     and errors. The language is sent with every sign-up. The discount
+     code itself is emailed by Formspree's automatic reply.
      ========================================================= */
   window.formspree("initForm", {
     formElement: "#notifyForm",
