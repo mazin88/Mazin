@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Trailer renderer — The Last Cigarette</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800;900&family=Montserrat:ital,wght@0,700;0,800;0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; background: #000; overflow: hidden; }
+  #stage { position: relative; }
+  #stage canvas { position: absolute; left: 0; top: 0; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="bg"></canvas>
+  <canvas id="smoke"></canvas>
+  <canvas id="fg"></canvas>
+</div>
+<script>
+/*
+  Trailer renderer. render.js calls window.renderAt(seconds) for every frame and saves the result.
+  Live preview: trailer.html?w=1280&h=720&preview=1  (add &lang=ar for the Arabic version).
+  The end card text is in the endTitle / endSub / endReady entries below.
+*/
+const qs = new URLSearchParams(location.search);
+const AR = qs.get("lang") === "ar";
+const W = +qs.get("w") || 1280;
+const H = +qs.get("h") || 720;
+const TALL = H > W;
+const U = Math.min(W, H) / 720;
+const DURATION = 32;
+
+const COL = { dark: "#110a07", paper: "#fbf4ea", ink: "#1e1612", cream: "#fbf4ea", red: "#d7141b", redLit: "#ff3b40" };
+const CMAP = { w: COL.cream, r: COL.redLit, i: COL.ink };
+const END_PILL = AR ? "خصم 29%" : "29% OFF";
+const COVER_SRC = AR ? "../assets/cover-ar.jpg" : "../assets/cover-en.jpg";
+
+// Cairo has no italic, so the italic part of a font weight is dropped for Arabic.
+function F(weight, size) {
+  return AR ? `${weight.replace(" italic", "")} ${size}px Cairo` : `${weight} ${size}px Montserrat`;
+}
+
+/* On-screen text. A line is a list of [text, colour]: "w" cream, "r" red, "i" ink. */
+const S = AR ? {
+  s1: TALL ? [[["كل يوم،", "w"]], [["تتفقد", "w"]], [["الساعة…", "w"]]] : [[["كل يوم،", "w"]], [["تتفقد الساعة…", "w"]]],
+  s2: TALL ? [[["…تنتظر", "w"]], [["سيجارتك التالية.", "r"]]] : [[["…تنتظر سيجارتك", "w"]], [["التالية.", "r"]]],
+  s3: [[["تظن أنك", "w"]], [["المسيطر.", "w"]]],
+  hit: [[["لست كذلك.", "r"]]],
+  s4: [[["هناك من يمسك", "w"]], [["بالسلسلة.", "r"]]],
+  s5: [[["تعرّف على", "w"]], [["سيّدك.", "r"]]],
+  s6: TALL ? [[["كتاب واحد.", "w"]], [["يوم واحد.", "w"]], [["سيجارة أخيرة.", "r"]]]
+            : [[["كتاب واحد.", "w"]], [["يوم واحد.", "w"]], [["سيجارة", "w"], [" أخيرة.", "r"]]],
+  s7: [[["ولن تُشعلها", "w"], [" أبدًا.", "r"]]],
+  tallReady: [[["رحلتك تبدأ الآن.", "i"]]],
+  ready2: [[["هل أنت مستعد؟", "r"]]],
+  endTitle: [[["السيجارة", "i"]], [["الأخيرة", "r"]]],
+  endSub: [[["دخِّن وأنت تقرأ", "i"]]],
+  endDesc: [[["كيف يستعبدك النيكوتين، وكيف تتحرر منه إلى الأبد.", "i"]]],
+  endReady: [[["رحلتك تبدأ الآن.", "i"]], [["هل أنت مستعد؟", "r"]]],
+} : {
+  s1: TALL ? [[["Every day,", "w"]], [["you check", "w"]], [["the time…", "w"]]] : [[["Every day,", "w"]], [["you check the time…", "w"]]],
+  s2: TALL ? [[["…waiting", "w"]], [["for your next", "w"]], [["cigarette.", "r"]]] : [[["…waiting for your", "w"]], [["next ", "w"], ["cigarette.", "r"]]],
+  s3: TALL ? [[["You think", "w"]], [["you're in", "w"]], [["control.", "w"]]] : [[["You think you're", "w"]], [["in control.", "w"]]],
+  hit: [[["You're not.", "r"]]],
+  s4: TALL ? [[["Someone else", "w"]], [["is holding", "w"]], [["the chain.", "r"]]] : [[["Someone else is", "w"]], [["holding ", "w"], ["the chain.", "r"]]],
+  s5: [[["Meet the", "w"]], [["Master.", "r"]]],
+  s6: TALL ? [[["One book.", "w"]], [["One day.", "w"]], [["One last", "r"]], [["cigarette.", "r"]]] : [[["One book.", "w"]], [["One day.", "w"]], [["One ", "w"], ["last cigarette.", "r"]]],
+  s7: [[["And never ", "w"], ["again.", "r"]]],
+  tallReady: [[["Your journey", "i"]], [["starts now.", "i"]]],
+  ready2: [[["Are you ready?", "r"]]],
+  endTitle: [[["The ", "i"], ["Last", "r"]], [["Cigarette", "i"]]],
+  endSub: [[["Smoke While You Read", "i"]]],
+  endDesc: [[["How nicotine enslaves you… and how to break free for good.", "i"]]],
+  endReady: [[["Your journey starts now.", "i"]], [["Are you ready?", "r"]]],
+};
+
+// Camera framing over the cover (pixels on a 941-wide cover)
+const CAM = TALL ? {
+  watch: { from: [640, 920, 760], to: [705, 930, 720] },
+  chain: { from: [700, 960, 820], to: [330, 980, 880] },
+  master: { from: [310, 920, 760], to: [300, 920, 720] }
+} : {
+  watch: { from: [640, 830, 520], to: [705, 865, 350] },
+  chain: { from: [720, 770, 380], to: [330, 1080, 420] },
+  master: { from: [300, 930, 500], to: [300, 905, 330] }
+};
+
+/* ---------- canvases ---------- */
+const stageEl = document.getElementById("stage");
+stageEl.style.width = W + "px"; stageEl.style.height = H + "px";
+const bgC = document.getElementById("bg"), fgC = document.getElementById("fg"), smC = document.getElementById("smoke");
+[bgC, fgC, smC].forEach(c => { c.width = W; c.height = H; c.style.width = W + "px"; c.style.height = H + "px"; });
+const bg = bgC.getContext("2d"), fg = fgC.getContext("2d");
+bg.imageSmoothingQuality = "high"; fg.imageSmoothingQuality = "high";
+
+/* ---------- helpers ---------- */
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const seg = (t, a, b) => clamp((t - a) / (b - a), 0, 1);
+const ease = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const easeOut = x => 1 - Math.pow(1 - x, 3);
+const lerp = (a, b, k) => a + (b - a) * k;
+const win = (t, a, b, fin = .6, fout = .6) => ease(seg(t, a, a + fin)) * (1 - ease(seg(t, b - fout, b)));
+function hash(n) { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); }
+function hexToRgb(h) { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+function mixHex(a, b, k) { const A = hexToRgb(a), B = hexToRgb(b); return `rgb(${A.map((v, i) => Math.round(lerp(v, B[i], k))).join(",")})`; }
+function rr(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+
+/* ---------- assets ---------- */
+const cover = new Image();
+cover.src = COVER_SRC;
+
+function makeSprite(rgb) {
+  const c = document.createElement("canvas"); c.width = c.height = 64;
+  const x = c.getContext("2d"); const g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
+  g.addColorStop(0, `rgba(${rgb},1)`); g.addColorStop(.45, `rgba(${rgb},.45)`); g.addColorStop(1, `rgba(${rgb},0)`);
+  x.fillStyle = g; x.fillRect(0, 0, 64, 64); return c;
+}
+const puffLight = makeSprite("214,208,202");
+const goldSprite = (() => {
+  const c = document.createElement("canvas"); c.width = c.height = 32;
+  const x = c.getContext("2d"); const g = x.createRadialGradient(16, 16, 0, 16, 16, 16);
+  g.addColorStop(0, "rgba(255,230,160,1)"); g.addColorStop(.25, "rgba(236,182,70,.85)"); g.addColorStop(1, "rgba(201,147,40,0)");
+  x.fillStyle = g; x.fillRect(0, 0, 32, 32); return c;
+})();
+const grain = (() => {
+  const c = document.createElement("canvas"); c.width = c.height = 256;
+  const x = c.getContext("2d"); const d = x.createImageData(256, 256);
+  for (let i = 0; i < d.data.length; i += 4) { const v = 128 + (hash(i * .37) - .5) * 180; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+  x.putImageData(d, 0, 0); return c;
+})();
+
+/* ---------- smoke (WebGL, half resolution) ---------- */
+const gl = smC.getContext("webgl", { premultipliedAlpha: true, alpha: true, preserveDrawingBuffer: true, antialias: false });
+const FRAG = `
+precision highp float;
+uniform vec2 uRes; uniform float uTime; uniform vec3 uColA; uniform vec3 uColB; uniform float uAlpha; uniform vec2 uFocus; uniform float uClear;
+float hash(vec2 p){ p = fract(p * vec2(234.34, 435.345)); p += dot(p, p + 34.23); return fract(p.x * p.y); }
+float noise(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y); }
+float fbm(vec2 p){ float v = 0.0, a = 0.5; mat2 m = mat2(1.6, 1.2, -1.2, 1.6); for (int i = 0; i < 5; i++){ v += a * noise(p); p = m * p; a *= 0.5; } return v; }
+void main(){
+  vec2 uv = gl_FragCoord.xy / uRes; float aspect = uRes.x / uRes.y;
+  vec2 p = vec2(uv.x * aspect * 1.9, uv.y * 1.25);
+  float t = uTime * 0.06; p.y -= t * 1.3;
+  vec2 q = vec2(fbm(p + vec2(0.0, t * 0.6)), fbm(p + vec2(5.2, 1.3) - vec2(t * 0.4, 0.0)));
+  vec2 r = vec2(fbm(p + 3.4 * q + vec2(1.7, 9.2) + 0.15 * t), fbm(p + 3.4 * q + vec2(8.3, 2.8) + 0.12 * t));
+  float f = fbm(p + 2.8 * r);
+  float wisps = smoothstep(0.44, 0.98, f * 1.1 + 0.2 * r.x - 0.04);
+  float low = smoothstep(1.15, 0.0, uv.y);
+  vec2 c = (uv - uFocus) * vec2(1.4, 1.0);
+  float around = mix(1.0 - uClear, 1.0, smoothstep(0.1, 0.7, length(c)));
+  float a = wisps * (0.38 + 0.62 * low) * around * uAlpha;
+  vec3 col = mix(uColA, uColB, f);
+  gl_FragColor = vec4(col * a, a);
+}`;
+function sh(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
+const prog = gl.createProgram();
+gl.attachShader(prog, sh(gl.VERTEX_SHADER, "attribute vec2 p;void main(){gl_Position=vec4(p,0.0,1.0);}"));
+gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FRAG));
+gl.linkProgram(prog); gl.useProgram(prog);
+const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+const loc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+const UNI = {}; ["uRes", "uTime", "uColA", "uColB", "uAlpha", "uFocus", "uClear"].forEach(n => UNI[n] = gl.getUniformLocation(prog, n));
+smC.width = Math.round(W / 2); smC.height = Math.round(H / 2);
+gl.viewport(0, 0, smC.width, smC.height);
+function drawSmoke(t, colA, colB, alpha, focus, clear) {
+  gl.uniform2f(UNI.uRes, smC.width, smC.height); gl.uniform1f(UNI.uTime, t + 40);
+  gl.uniform3fv(UNI.uColA, colA); gl.uniform3fv(UNI.uColB, colB); gl.uniform1f(UNI.uAlpha, alpha);
+  gl.uniform2f(UNI.uFocus, focus[0], focus[1]); gl.uniform1f(UNI.uClear, clear);
+  gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT); gl.drawArrays(gl.TRIANGLES, 0, 3);
+}
+
+/* ---------- text ---------- */
+// Draws lines of coloured runs. Arabic runs right to left (x is the right edge, or the centre).
+function textBlock(ctx, t, o) {
+  const { lines, x, y, size, lh = 1.1, align = "center", anchor = "middle", start, stagger = .32, dur = .75,
+    outStart = 1e9, outDur = .5, weight = "900 italic", colors = {}, maxW = W - 120 * U, shadow = null, punch = 0 } = o;
+  const cm = { ...CMAP, ...colors };
+  let fs = size;
+  ctx.font = F(weight, fs);
+  const widest = Math.max(...lines.map(l => l.reduce((s, [tx]) => s + ctx.measureText(tx).width, 0)));
+  if (widest > maxW) fs = size * maxW / widest;
+  ctx.font = F(weight, fs);
+  const lineH = fs * lh;
+  const blockH = lineH * lines.length;
+  const top = anchor === "middle" ? y - blockH / 2 : anchor === "bottom" ? y - blockH : y;
+  const out = 1 - ease(seg(t, outStart, outStart + outDur));
+  lines.forEach((line, i) => {
+    const t0 = start + i * stagger;
+    const kin = easeOut(seg(t, t0, t0 + dur));
+    const a = kin * out;
+    if (a <= 0.001) return;
+    const widths = line.map(([tx]) => ctx.measureText(tx).width);
+    const total = widths.reduce((s, v) => s + v, 0);
+    const baseY = top + lineH * (i + 1) - (lineH - fs) / 2 - fs * .12 + (1 - kin) * 24 * U;
+    ctx.save();
+    ctx.globalAlpha = a;
+    if (kin < 1) ctx.filter = `blur(${((1 - kin) * 10 * U).toFixed(2)}px)`;
+    if (punch) {
+      const s = 1 + punch * (1 - easeOut(seg(t, t0, t0 + .35)));
+      ctx.translate(x, baseY - fs * .35); ctx.scale(s, s); ctx.translate(-x, -(baseY - fs * .35));
+    }
+    if (shadow) { ctx.shadowColor = shadow; ctx.shadowBlur = 22 * U; ctx.shadowOffsetY = 4 * U; }
+    if (AR) {
+      ctx.direction = "rtl"; ctx.textAlign = "right";
+      let edge = align === "center" ? x + total / 2 : x;
+      line.forEach(([tx, key], j) => {
+        ctx.fillStyle = cm[key] || key;
+        ctx.fillText(tx, edge, baseY);
+        edge -= widths[j];
+      });
+    } else {
+      ctx.textAlign = "left";
+      let cx = align === "center" ? x - total / 2 : x;
+      line.forEach(([tx, key], j) => {
+        ctx.fillStyle = cm[key] || key;
+        ctx.fillText(tx, cx, baseY);
+        cx += widths[j];
+      });
+    }
+    ctx.restore();
+  });
+}
+
+// Rounded red label. mode: "center" (ax is the centre), "left" or "right" (ax is that edge).
+function pill(ctx, text, ax, cy, size, alpha, t0, t, mode = "center") {
+  const k = easeOut(seg(t, t0, t0 + .6)); if (k <= 0) return;
+  ctx.save(); ctx.globalAlpha = alpha * k;
+  ctx.font = F("800", size);
+  ctx.letterSpacing = AR ? "0px" : `${size * .2}px`;
+  const tw = ctx.measureText(text).width;
+  const pw = tw + size * 2.2, ph = size * 2.5;
+  const cx = mode === "left" ? ax + pw / 2 : mode === "right" ? ax - pw / 2 : ax;
+  const sc = .9 + .1 * k;
+  ctx.translate(cx, cy); ctx.scale(sc, sc);
+  ctx.shadowColor = "rgba(215,20,27,.45)"; ctx.shadowBlur = 24 * U; ctx.shadowOffsetY = 8 * U;
+  ctx.fillStyle = COL.red; rr(ctx, -pw / 2, -ph / 2, pw, ph, ph / 2); ctx.fill();
+  ctx.shadowColor = "transparent";
+  ctx.fillStyle = "#fff"; ctx.textBaseline = "middle"; ctx.textAlign = "center";
+  ctx.direction = AR ? "rtl" : "ltr";
+  ctx.fillText(text, size * .1, size * .06);
+  ctx.restore();
+}
+
+/* ---------- cover shots (slow pan and zoom over the cover art) ---------- */
+function coverShot(ctx, t, a, b, cam, alpha) {
+  const CW = cover.naturalWidth, CH = cover.naturalHeight, s = CW / 941;
+  const k = ease(seg(t, a, b));
+  let cx = lerp(cam.from[0], cam.to[0], k) * s;
+  let cy = lerp(cam.from[1], cam.to[1], k) * s;
+  let sh = lerp(cam.from[2], cam.to[2], k) * s;
+  let sw = sh * W / H;
+  if (sw > CW) { sw = CW; sh = sw * H / W; }
+  if (sh > CH) { sh = CH; sw = sh * W / H; }
+  cx = clamp(cx, sw / 2, CW - sw / 2); cy = clamp(cy, sh / 2, CH - sh / 2);
+  ctx.save(); ctx.globalAlpha = alpha;
+  ctx.drawImage(cover, cx - sw / 2, cy - sh / 2, sw, sh, 0, 0, W, H);
+  ctx.fillStyle = "rgba(25,12,6,.22)"; ctx.fillRect(0, 0, W, H);
+  const g = ctx.createLinearGradient(0, H, 0, H * (TALL ? .45 : .35));
+  g.addColorStop(0, "rgba(12,7,4,.92)"); g.addColorStop(.55, "rgba(12,7,4,.5)"); g.addColorStop(1, "rgba(12,7,4,0)");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const v = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .35, W / 2, H / 2, Math.max(W, H) * .78);
+  v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,0,0,.55)");
+  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+
+/* ---------- the cigarette ---------- */
+function drawCig(ctx, cx, cy, len, dia, heat, burn, alpha) {
+  const x0 = cx - len / 2;
+  const bodyLen = len * (1 - burn);
+  const tipW = dia * .85;
+  const x1 = x0 + bodyLen - tipW;
+  ctx.save(); ctx.globalAlpha = alpha;
+  let g = ctx.createLinearGradient(0, cy - dia / 2, 0, cy + dia / 2);
+  g.addColorStop(0, "#ffffff"); g.addColorStop(.55, "#efe9e0"); g.addColorStop(1, "#c9bfb2");
+  ctx.fillStyle = g; rr(ctx, x0, cy - dia / 2, bodyLen - tipW, dia, [dia * .2, 0, 0, dia * .2]); ctx.fill();
+  const fl = len * .3;
+  g = ctx.createLinearGradient(0, cy - dia / 2, 0, cy + dia / 2);
+  g.addColorStop(0, "#eaa457"); g.addColorStop(1, "#b46a27");
+  ctx.fillStyle = g; rr(ctx, x0, cy - dia / 2, fl, dia, [dia * .2, 0, 0, dia * .2]); ctx.fill();
+  ctx.fillStyle = "rgba(110,55,10,.35)";
+  for (let i = 0; i < 70; i++) { ctx.beginPath(); ctx.arc(x0 + hash(i) * fl, cy - dia / 2 + hash(i + 50) * dia, dia * .045, 0, 7); ctx.fill(); }
+  ctx.fillStyle = "#d9b25a"; ctx.fillRect(x0 + fl - dia * .16, cy - dia / 2, dia * .16, dia);
+  ctx.fillStyle = "rgba(60,30,15,.85)"; ctx.fillRect(x1 - dia * .06, cy - dia / 2, dia * .08, dia);
+  const hot = clamp(heat, 0, 1);
+  if (hot > 0) { ctx.shadowColor = `rgba(255,105,30,${.95 * hot})`; ctx.shadowBlur = dia * 2.6 * hot; }
+  g = ctx.createRadialGradient(x1 + tipW * .45, cy, 0, x1 + tipW * .45, cy, dia * .8);
+  g.addColorStop(0, mixHex("#9c958d", "#ffe08a", hot));
+  g.addColorStop(.45, mixHex("#7d766f", "#ff5a1a", hot));
+  g.addColorStop(1, mixHex("#4f4944", "#6d1806", hot));
+  ctx.fillStyle = g; rr(ctx, x1, cy - dia / 2, tipW, dia, [0, dia * .32, dia * .32, 0]); ctx.fill();
+  ctx.restore();
+  return [x1 + tipW * .7, cy - dia * .35];
+}
+function tipSmoke(ctx, t, tip, from, until, scale, alpha, sprite, burst = 1) {
+  const step = .1, life = 3.4;
+  const last = Math.min(t, until);
+  for (let te = Math.ceil(from / step) * step; te <= last; te += step) {
+    const age = t - te; if (age < 0 || age > life) continue;
+    const k = age / life, n = hash(te * 10);
+    const x = tip[0] + (Math.sin(te * 2.3 + age * 1.4) * 12 + (n - .5) * 8) * scale * (.25 + k * 2.4) + age * 7 * scale;
+    const y = tip[1] - age * 46 * scale - age * age * 5 * scale;
+    const r = (5 + age * 20) * scale * burst;
+    const a = alpha * (1 - k) * Math.min(1, age * 5) * .3;
+    ctx.globalAlpha = a; ctx.drawImage(sprite, x - r, y - r, r * 2, r * 2);
+  }
+  ctx.globalAlpha = 1;
+}
+
+/* ---------- gold dust, burnt crack, swoosh (end card) ---------- */
+const DUST = Array.from({ length: 170 }, (_, i) => ({
+  u0: hash(i * 3.1), off: (hash(i * 7.7) + hash(i * 1.3) - 1) * .09, r: (1.3 + Math.pow(hash(i * 5.9), 3) * 6) * U,
+  a: .35 + hash(i * 2.2) * .65, tw: .6 + hash(i * 4.4) * 1.8, ph: hash(i * 8.8) * 6.28, sp: .006 + hash(i * 6.6) * .01
+}));
+function drawDust(ctx, t, alpha) {
+  for (const p of DUST) {
+    const u = (p.u0 + p.sp * t) % 1;
+    const x = u * (W + 40) - 20;
+    const y = H * ((TALL ? .7 : .86) - (TALL ? .34 : .6) * u + p.off);
+    const tw = .5 + .5 * Math.sin(t * p.tw + p.ph);
+    ctx.globalAlpha = alpha * p.a * (.35 + .65 * tw);
+    ctx.drawImage(goldSprite, x - p.r, y - p.r, p.r * 2, p.r * 2);
+  }
+  ctx.globalAlpha = 1;
+}
+const CRACK = (() => {
+  const pts = []; let j = 0;
+  for (let i = 0; i <= 40; i++) {
+    const k = i / 40, mk = 1 - k;
+    const x = mk * mk * 104 + 2 * mk * k * 262 + k * k * 406, y = mk * mk * -6 + 2 * mk * k * 150 + k * k * 292;
+    const notch = hash(i * 9.1) < .1 ? (hash(i * 3.3) - .3) * 14 : 0;
+    j = j * .55 + (hash(i * 5.7) - .5) * 8 + notch;
+    pts.push([x - j * .5, y + j * .8]);
+  }
+  return pts;
+})();
+// Top-right crack for English, mirrored to the top-left for Arabic
+function drawCrack(ctx, t, alpha) {
+  const bw = (TALL ? .55 : .3) * W, s = bw / 400;
+  ctx.save(); ctx.globalAlpha = alpha;
+  if (AR) { ctx.translate(bw, 0); ctx.scale(-s, s); } else { ctx.translate(W - bw, 0); ctx.scale(s, s); }
+  const path = new Path2D();
+  CRACK.forEach(([x, y], i) => (i ? path.lineTo(x, y) : path.moveTo(x, y)));
+  const area = new Path2D(path); area.lineTo(406, -6); area.closePath();
+  ctx.fillStyle = "rgba(150,90,40,.12)"; ctx.fill(area);
+  ctx.lineJoin = "round"; ctx.lineCap = "round";
+  ctx.shadowColor = "rgba(239,106,28,.9)"; ctx.shadowBlur = 18 * U * (0.8 + .2 * Math.sin(t * 2.1));
+  ctx.strokeStyle = "rgba(239,106,28,.55)"; ctx.lineWidth = 10; ctx.stroke(path);
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = "#2a170d"; ctx.lineWidth = 4.5; ctx.stroke(path);
+  ctx.strokeStyle = "#ffb347"; ctx.lineWidth = 2; ctx.setLineDash([7, 11, 2, 16, 10, 7, 3, 12]); ctx.lineDashOffset = -t * 20; ctx.stroke(path);
+  ctx.restore();
+}
+function swoosh(ctx, x, y, w, alpha) {
+  const s = w / 600;
+  ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x, y); ctx.scale(s, s);
+  ctx.fillStyle = COL.ink; ctx.fill(new Path2D("M40 34 C 110 12, 190 4, 270 6 C 190 10, 110 20, 40 34 Z"));
+  ctx.fillStyle = COL.red; ctx.fill(new Path2D("M300 8 C 400 2, 500 8, 572 24 C 500 13, 400 8, 300 8 Z"));
+  ctx.restore();
+}
+
+/* ---------- scene timings (seconds) ---------- */
+const T = { s1: [0, 4.4], s2: [4.0, 8.5], s3: [8.3, 11.5], s4: [11.3, 15.3], s5: [15.1, 19.3], s6: [19.1, 23.5], s7: [23.3, 26.8], end: 26.4 };
+
+/* ---------- main render ---------- */
+function renderAt(t) {
+  bg.save(); fg.save();
+  bg.clearRect(0, 0, W, H); fg.clearRect(0, 0, W, H);
+
+  // dark ground with a warm ember glow from below
+  bg.fillStyle = COL.dark; bg.fillRect(0, 0, W, H);
+  let g = bg.createRadialGradient(W / 2, H * 1.08, 0, W / 2, H * 1.08, Math.max(W, H) * .75);
+  g.addColorStop(0, "rgba(130,48,14,.42)"); g.addColorStop(1, "rgba(130,48,14,0)");
+  bg.fillStyle = g; bg.fillRect(0, 0, W, H);
+
+  const a2 = win(t, ...T.s2), a4 = win(t, ...T.s4), a5 = win(t, ...T.s5);
+  if (a2 > 0) coverShot(bg, t, ...T.s2, CAM.watch, a2);
+  if (a4 > 0) coverShot(bg, t, ...T.s4, CAM.chain, a4);
+  if (a5 > 0) coverShot(bg, t, ...T.s5, CAM.master, a5);
+
+  const light = ease(seg(t, T.end, T.end + .9));        // paper end card
+  if (light > 0) { bg.globalAlpha = light; bg.fillStyle = COL.paper; bg.fillRect(0, 0, W, H); bg.globalAlpha = 1; }
+
+  // smoke layer; it clears on the side where the end-card text sits
+  const img = Math.max(a2, a4, a5);
+  const colA = [lerp(.55, .31, light), lerp(.52, .27, light), lerp(.5, .25, light)];
+  const colB = [lerp(.86, .6, light), lerp(.83, .55, light), lerp(.8, .52, light)];
+  const sAlpha = lerp(.55, .42, light) * (1 - img * .65);
+  const focus = light > .5 ? (TALL ? [.5, .55] : [AR ? .68 : .32, .5]) : [.5, .5];
+  drawSmoke(t, colA, colB, sAlpha, focus, light > .5 ? .55 : .35);
+
+  const sh = "rgba(0,0,0,.55)";
+  const big = TALL ? 92 : 64;
+  const huge = TALL ? 150 : 104;
+  const capX = TALL ? W / 2 : (AR ? W - 80 * U : 80 * U);       // captions sit on the reading side
+  const capAlign = TALL ? "center" : (AR ? "right" : "left");
+  const capY = TALL ? H - 400 : H - 70 * U;
+
+  /* S1: every day, you check the time */
+  const a1 = win(t, ...T.s1, .01, .6);
+  if (a1 > 0) {
+    const heat = .85 + .15 * Math.sin(t * 13) * Math.sin(t * 7.3);
+    const tip = drawCig(fg, W / 2, H * (TALL ? .72 : .78), TALL ? 640 : 340 * U, TALL ? 24 : 17 * U, heat, 0, a1);
+    tipSmoke(fg, t, tip, -3.4, 99, U * (TALL ? 1.1 : 1), a1, puffLight);
+    textBlock(fg, t, { lines: S.s1, x: W / 2, y: H * .4, size: big, start: .5, stagger: .9, outStart: 3.8, shadow: sh });
+  }
+
+  /* S2: waiting for your next cigarette (the watch) */
+  if (a2 > 0) {
+    textBlock(fg, t, { lines: S.s2, x: capX, y: capY, anchor: "bottom", align: capAlign, size: big, start: 4.7, stagger: .45, outStart: 7.9, shadow: sh });
+  }
+
+  /* S3: you think you're in control. You're not. */
+  const a3 = win(t, ...T.s3, .3, .4);
+  if (a3 > 0) {
+    textBlock(fg, t, { lines: S.s3, x: W / 2, y: H / 2, size: big, start: 8.6, stagger: .4, outStart: 9.75, outDur: .25, shadow: sh });
+    const hitK = seg(t, 10.0, 10.08);
+    if (hitK > 0) {
+      const shake = (1 - seg(t, 10.0, 10.35)) * 7 * U;
+      fg.save(); fg.translate(Math.sin(t * 90) * shake, Math.cos(t * 70) * shake);
+      textBlock(fg, t, { lines: S.hit, x: W / 2, y: H / 2, size: huge, start: 10.0, dur: .2, outStart: 11.05, outDur: .4, punch: .35, shadow: "rgba(255,40,40,.35)" });
+      fg.restore();
+      const flash = (1 - seg(t, 10.0, 10.6)) * .35;
+      if (flash > 0) { fg.fillStyle = `rgba(215,20,27,${flash})`; fg.fillRect(0, 0, W, H); }
+    }
+  }
+
+  /* S4: someone else is holding the chain */
+  if (a4 > 0) {
+    textBlock(fg, t, { lines: S.s4, x: capX, y: capY, anchor: "bottom", align: capAlign, size: big, start: 12.0, stagger: .45, outStart: 14.7, shadow: sh });
+  }
+
+  /* S5: meet the Master */
+  if (a5 > 0) {
+    textBlock(fg, t, { lines: S.s5, x: capX, y: capY, anchor: "bottom", align: capAlign, size: TALL ? 120 : 84, start: 15.7, stagger: .55, outStart: 18.7, shadow: sh });
+  }
+
+  /* S6: one book, one day, one last cigarette */
+  const a6 = win(t, ...T.s6, .3, .5);
+  if (a6 > 0) {
+    textBlock(fg, t, { lines: S.s6, x: W / 2, y: H / 2, size: TALL ? 104 : 70, lh: 1.18, start: 19.4, stagger: TALL ? .8 : 1.2, dur: .7, outStart: 23.0, shadow: sh });
+  }
+
+  /* S7: the last cigarette goes out */
+  const a7 = win(t, ...T.s7, .35, .5);
+  if (a7 > 0) {
+    const flick = .88 + .12 * Math.sin(t * 13) * Math.sin(t * 7.3);
+    const heat = flick * (1 - ease(seg(t, 24.0, 24.9)));
+    const tip = drawCig(fg, W / 2, H * (TALL ? .6 : .64), TALL ? 840 : 440 * U, TALL ? 36 : 24 * U, heat, .08 + .06 * seg(t, 23.3, 24.0), a7);
+    tipSmoke(fg, t, tip, 20, 24.0, U * 1.2, a7, puffLight);
+    tipSmoke(fg, t, tip, 24.0, 24.5, U * 1.5, a7 * 1.4, puffLight, 1.6);
+    textBlock(fg, t, { lines: S.s7, x: W / 2, y: H * (TALL ? .4 : .36), size: big, start: 24.9, dur: .9, outStart: 26.2, shadow: sh });
+  }
+
+  /* END CARD on paper */
+  if (light > 0) {
+    drawDust(fg, t, light);
+    drawCrack(fg, t, light);
+    const ck = easeOut(seg(t, 26.9, 28.0));
+    const CW = cover.naturalWidth, CH = cover.naturalHeight;
+    const coverH = TALL ? 1000 : H * .78;
+    const coverW = coverH * CW / CH;
+    const ccx = TALL ? W / 2 : (AR ? W * .265 : W * .735), ccy = TALL ? 900 : H / 2;
+    if (ck > 0) {
+      fg.save(); fg.globalAlpha = ck;
+      fg.translate(ccx, ccy + (1 - ck) * 30 * U); fg.rotate((-2.5 + 1.5 * ck) * Math.PI / 180);
+      const sc = .94 + .06 * ck; fg.scale(sc, sc);
+      fg.shadowColor = "rgba(30,22,18,.45)"; fg.shadowBlur = 50 * U; fg.shadowOffsetY = 26 * U;
+      fg.drawImage(cover, -coverW / 2, -coverH / 2, coverW, coverH);
+      fg.restore();
+    }
+    const ink = { colors: { i: COL.ink, r: COL.red } };
+    if (TALL) {
+      textBlock(fg, t, { ...ink, lines: S.tallReady, x: W / 2, y: 250, size: 84, start: 27.3, stagger: .3 });
+      textBlock(fg, t, { ...ink, lines: S.ready2, x: W / 2, y: 1500, size: 88, start: 28.6 });
+      pill(fg, END_PILL, W / 2, 1650, 34, light, 29.6, t);
+    } else if (!AR) {
+      // English, landscape: text on the left, cover on the right
+      const lx = W * .085, k = H / 720;
+      textBlock(fg, t, { ...ink, lines: S.endTitle, x: lx, y: 88 * k, anchor: "top", align: "left", size: 88 * k, lh: 1.02, weight: "900 italic", start: 27.2, stagger: .35, maxW: W * .5 });
+      textBlock(fg, t, { ...ink, lines: S.endSub, x: lx, y: 290 * k, anchor: "top", align: "left", size: 28 * k, lh: 1.3, weight: "700 italic", start: 28.0, maxW: W * .5 });
+      textBlock(fg, t, { ...ink, lines: S.endDesc, x: lx, y: 336 * k, anchor: "top", align: "left", size: 19 * k, lh: 1.3, weight: "700 italic", start: 28.2, maxW: W * .5 });
+      textBlock(fg, t, { ...ink, lines: S.endReady, x: lx, y: 400 * k, anchor: "top", align: "left", size: 34 * k, lh: 1.3, start: 28.8, stagger: .5, maxW: W * .5 });
+      pill(fg, END_PILL, lx, 540 * k, 17 * k, light, 29.8, t, "left");
+    } else {
+      // Arabic, landscape: text on the right, cover on the left
+      const rx = W - W * .085, k = H / 720;
+      textBlock(fg, t, { ...ink, lines: S.endTitle, x: rx, y: 80 * k, anchor: "top", align: "right", size: 96 * k, lh: 1.25, weight: "900 italic", start: 27.2, stagger: .35, maxW: W * .5 });
+      textBlock(fg, t, { ...ink, lines: S.endSub, x: rx, y: 350 * k, anchor: "top", align: "right", size: 40 * k, lh: 1.3, weight: "700 italic", start: 28.0, maxW: W * .5 });
+      textBlock(fg, t, { ...ink, lines: S.endDesc, x: rx, y: 420 * k, anchor: "top", align: "right", size: 22 * k, lh: 1.4, weight: "700 italic", start: 28.2, maxW: W * .5 });
+      textBlock(fg, t, { ...ink, lines: S.endReady, x: rx, y: 490 * k, anchor: "top", align: "right", size: 36 * k, lh: 1.5, start: 28.8, stagger: .5, maxW: W * .5 });
+      pill(fg, END_PILL, rx, 660 * k, 18 * k, light, 29.8, t, "right");
+    }
+  }
+
+  // dark-scene vignette and a light, still grain (it hides banding and costs little to encode)
+  const dark = 1 - light;
+  if (dark > 0) {
+    fg.save();
+    const v = fg.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .3, W / 2, H / 2, Math.max(W, H) * .75);
+    v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, `rgba(0,0,0,${.5 * dark})`);
+    fg.fillStyle = v; fg.fillRect(0, 0, W, H);
+    fg.globalCompositeOperation = "overlay"; fg.globalAlpha = .09 * dark;
+    fg.fillStyle = fg.createPattern(grain, "repeat"); fg.fillRect(0, 0, W, H);
+    fg.restore();
+  }
+  // fade in from black at the very start
+  const fadeIn = 1 - seg(t, 0, .6);
+  if (fadeIn > 0) { fg.fillStyle = `rgba(0,0,0,${fadeIn})`; fg.fillRect(0, 0, W, H); }
+
+  bg.restore(); fg.restore();
+}
+
+window.renderAt = renderAt;
+window.trailerReady = (async () => {
+  await new Promise((res, rej) => { if (cover.complete && cover.naturalWidth) res(); else { cover.onload = res; cover.onerror = rej; } });
+  const loads = AR
+    ? ["700 40px Cairo", "800 40px Cairo", "900 40px Cairo"]
+    : ["700 italic 20px Montserrat", "800 italic 20px Montserrat", "900 italic 20px Montserrat", "800 20px Montserrat", "900 20px Montserrat"];
+  await Promise.all(loads.map(f => document.fonts.load(f)));
+  await document.fonts.ready;
+  renderAt(0);
+  return true;
+})();
+
+if (qs.get("preview")) {
+  window.trailerReady.then(() => {
+    const t0 = performance.now();
+    const tick = now => { renderAt(((now - t0) / 1000) % DURATION); requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  });
+}
+</script>
+</body>
+</html>

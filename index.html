@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>The Last Cigarette — Smoke While You Read</title>
+  <meta name="description" content="The Last Cigarette: how nicotine enslaves you, and how to break free for good. One book. One day. One last cigarette.">
+  <meta name="theme-color" content="#fbf4ea">
+  <meta property="og:type" content="book">
+  <meta property="og:title" content="The Last Cigarette">
+  <meta property="og:description" content="Smoke While You Read. How nicotine enslaves you, and how to break free for good.">
+  <meta property="og:image" content="assets/trailer-poster.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="alternate" hreflang="en" href="index.html">
+  <link rel="alternate" hreflang="ar" href="ar.html">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700;1,800;1,900&family=Lora:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <!-- Top bar: appears after the opening scenes -->
+  <nav class="topbar" id="topbar" aria-label="Main">
+    <div class="topbar-inner">
+      <a href="#top" class="brand">The <em>Last</em> Cigarette</a>
+      <a href="#get" class="btn btn-red btn-sm">Get the book</a>
+    </div>
+  </nav>
+
+  <!-- ============ OPENING: smoke + title + "Are you ready?" ============ -->
+  <div class="stage" id="top">
+    <div class="stage-bg" aria-hidden="true">
+      <canvas id="smoke"></canvas>
+      <canvas id="dust"></canvas>
+      <svg class="burn-corner" id="burnCorner" viewBox="0 0 400 320" preserveAspectRatio="xMaxYMin meet"></svg>
+      <div class="burn-hole"></div>
+    </div>
+
+    <header class="hero">
+      <div class="hero-content" id="heroContent">
+        <p class="eyebrow fade-in" style="--d:.3s">A book about breaking free</p>
+        <h1 class="title fade-in" style="--d:.7s">
+          <span class="t1">The <span class="t-master">Last</span></span>
+          <span class="t2">Cigarette</span>
+        </h1>
+        <svg class="swoosh fade-in" style="--d:1.2s" viewBox="0 0 600 40" aria-hidden="true">
+          <path d="M40 34 C 110 12, 190 4, 270 6 C 190 10, 110 20, 40 34 Z"/>
+          <path d="M300 8 C 400 2, 500 8, 572 24 C 500 13, 400 8, 300 8 Z"/>
+        </svg>
+        <p class="subtitle fade-in" style="--d:1.5s">Smoke While You Read</p>
+        <p class="sub2 fade-in" style="--d:1.7s">How nicotine enslaves you… and how to break free for good.</p>
+        <div class="hero-cta fade-in" style="--d:2s">
+          <a href="#trailer" class="btn btn-red" data-play-trailer>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+            Watch the trailer
+          </a>
+          <a href="#get" class="btn btn-line">Get the book</a>
+        </div>
+        <a class="lang-link fade-in" style="--d:2.2s" href="ar.html" lang="ar" hreflang="ar">العربية</a>
+      </div>
+      <a href="#ready" class="scroll-cue fade-in" style="--d:2.6s" aria-label="Scroll down">
+        <span>Scroll</span><i></i>
+      </a>
+    </header>
+
+    <section class="ready" id="ready" aria-label="Your journey starts now">
+      <div class="ready-pin">
+        <p class="ready-line" data-words>Your journey starts now.</p>
+        <p class="ready-line ready-q" data-words>Are you ready?</p>
+      </div>
+    </section>
+  </div>
+
+  <main id="main">
+
+    <!-- ============ TRAILER ============ -->
+    <section class="band trailer" id="trailer" aria-labelledby="trailer-title">
+      <div class="wrap">
+        <header class="sec-head center reveal">
+          <p class="kicker">The trailer</p>
+          <h2 id="trailer-title">Who is really holding <span class="red">the chain?</span></h2>
+          <p class="sec-lead">Thirty seconds. Turn the sound on.</p>
+        </header>
+        <figure class="player reveal" id="player">
+          <video id="trailerVideo" playsinline preload="none" poster="assets/trailer-poster.jpg"
+                 data-src-wide="assets/trailer.mp4" data-src-tall="assets/trailer-vertical.mp4"
+                 data-poster-wide="assets/trailer-poster.jpg" data-poster-tall="assets/trailer-poster-vertical.jpg"></video>
+          <button class="play" id="playBtn" type="button" aria-label="Play the trailer">
+            <span class="play-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></span>
+            <span class="play-label">Play trailer <span class="dur">0:32</span></span>
+          </button>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============ FOLLOW THE SMOKE ============ -->
+    <section class="band journey" id="journey" aria-labelledby="journey-title">
+      <div class="wrap">
+        <header class="sec-head center reveal">
+          <p class="kicker">Follow the smoke</p>
+          <h2 id="journey-title">Where does the smoke <span class="red">go?</span></h2>
+          <p class="sec-lead">A short journey inside a smoker's lungs. Turn the sound on.</p>
+        </header>
+        <figure class="player tall reveal">
+          <video playsinline preload="none" poster="assets/journey-poster.jpg" data-src="assets/journey-en.mp4"></video>
+          <button class="play" type="button" aria-label="Play the video: Follow the smoke">
+            <span class="play-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></span>
+            <span class="play-label">Play <span class="dur">0:19</span></span>
+          </button>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============ NOT ANOTHER QUIT PLAN ============ -->
+    <section class="band different" aria-labelledby="diff-title">
+      <div class="wrap two-col">
+        <div class="reveal">
+          <p class="kicker">Not another quit plan</p>
+          <h2 id="diff-title">No patches. No pills. <span class="red">No willpower war.</span></h2>
+        </div>
+        <div class="prose reveal">
+          <p>You have been told that quitting is hard. That it hurts. That you will fight cravings for months.</p>
+          <p>This book does not fight the cigarette. It shows you who has been holding the chain all along. Once you see it, you cannot unsee it.</p>
+          <p class="aside">We won't reveal the method here. That is the book's job. But we can tell you what happens to the people who read it.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ONE BOOK, ONE DAY ============ -->
+    <section class="band day" id="day" aria-labelledby="day-title">
+      <div class="wrap">
+        <header class="sec-head center reveal">
+          <p class="kicker">What readers go through</p>
+          <h2 id="day-title">One book. <span class="red">One day.</span></h2>
+        </header>
+
+        <ol class="timeline">
+          <li class="step reveal">
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32"><path d="M4 22h24M8 22a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M16 6v4M7 10l2.5 2.5M25 10l-2.5 2.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M10 26h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+            </span>
+            <p class="step-time">Morning</p>
+            <h3>You open the book</h3>
+            <p>Still a smoker. Light one up if you like. You are allowed.</p>
+          </li>
+          <li class="step reveal">
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="6" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M16 3v4M16 25v4M3 16h4M25 16h4M6.8 6.8l2.8 2.8M22.4 22.4l2.8 2.8M6.8 25.2l2.8-2.8M22.4 9.6l2.8-2.8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+            </span>
+            <p class="step-time">Afternoon</p>
+            <h3>You get hooked</h3>
+            <p>Not on cigarettes. On the book. You can't put it down.</p>
+          </li>
+          <li class="step reveal">
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32"><path d="M4 22h24M9 22a7 7 0 0 1 14 0" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M16 15v-8M12.5 10.5 16 7l3.5 3.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" transform="rotate(180 16 11)"/><path d="M10 26h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+            </span>
+            <p class="step-time">Evening</p>
+            <h3>You turn the last page</h3>
+            <p>Many readers finish it the same day they start.</p>
+          </li>
+          <li class="step step-final reveal">
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32"><path d="M21 4.5A11.5 11.5 0 1 0 27.5 21 9 9 0 0 1 21 4.5Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg>
+            </span>
+            <p class="step-time">That night</p>
+            <h3>The last cigarette</h3>
+            <p>You put it out. And you never light another one.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ THE LAST CIGARETTE ============ -->
+    <section class="band last" aria-label="The last cigarette">
+      <div class="wrap center">
+        <div class="cig" id="cig" aria-hidden="true">
+          <div class="cig-body">
+            <div class="cig-filter"></div>
+            <div class="cig-ember"></div>
+            <div class="cig-wisp"><i></i><i></i><i></i></div>
+          </div>
+        </div>
+        <blockquote class="quote reveal">
+          <p>Many have tried it. One day of reading. The <span class="red">last cigarette</span> was put out, and never lit again.</p>
+        </blockquote>
+      </div>
+    </section>
+
+    <!-- ============ LOOK CLOSER AT THE COVER ============ -->
+    <section class="band cover-story" id="cover" aria-labelledby="cover-title">
+      <div class="wrap cover-grid">
+        <div class="cover-frame reveal" id="coverFrame">
+          <img src="assets/cover-en.jpg" alt="Book cover: a crowned brain sits on a red throne holding a golden chain. The chain runs to a collar around the neck of a man who leans on a wall, smoking and checking his watch." width="941" height="1672" loading="lazy">
+          <button class="hotspot" type="button" style="--x:77%;--y:46.4%" data-clue="1" aria-label="Clue 1: the watch">1</button>
+          <button class="hotspot" type="button" style="--x:85.5%;--y:38.9%" data-clue="2" aria-label="Clue 2: the golden collar">2</button>
+          <button class="hotspot" type="button" style="--x:63.8%;--y:62.8%" data-clue="3" aria-label="Clue 3: the chain">3</button>
+          <button class="hotspot" type="button" style="--x:35.1%;--y:49.9%" data-clue="4" aria-label="Clue 4: the Master">4</button>
+          <button class="hotspot" type="button" style="--x:47.8%;--y:83.3%" data-clue="5" aria-label="Clue 5: the floor">5</button>
+        </div>
+        <div class="cover-text">
+          <header class="reveal">
+            <p class="kicker">Look closer</p>
+            <h2 id="cover-title">Every detail on the cover <span class="red">tells the story</span></h2>
+          </header>
+          <ol class="clues reveal" id="clues">
+            <li data-clue="1"><span class="clue-n">1</span><div><h3>The watch</h3><p>He checks the time. Is it time for the next one yet? Every smoker knows this moment.</p></div></li>
+            <li data-clue="2"><span class="clue-n">2</span><div><h3>The golden collar</h3><p>It shines like a reward. It is still a collar.</p></div></li>
+            <li data-clue="3"><span class="clue-n">3</span><div><h3>The chain</h3><p>Follow it from his neck. It does not end in his own hand.</p></div></li>
+            <li data-clue="4"><span class="clue-n">4</span><div><h3>The Master</h3><p>Relaxed, smiling, in no hurry. He never has to chase you. You always come back.</p></div></li>
+            <li data-clue="5"><span class="clue-n">5</span><div><h3>The floor</h3><p>Empty packs and burnt-out butts. The bill keeps growing, day after day.</p></div></li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ COST CALCULATOR ============ -->
+    <section class="band cost" id="cost" aria-labelledby="cost-title">
+      <div class="wrap">
+        <header class="sec-head center reveal">
+          <p class="kicker">Do the math</p>
+          <h2 id="cost-title">What is the Master <span class="red">costing you?</span></h2>
+          <p class="sec-lead">Move the slider. Put in what you pay for a pack.</p>
+        </header>
+
+        <div class="calc reveal">
+          <form class="calc-inputs" id="calcForm" onsubmit="return false">
+            <div class="field">
+              <label for="perDay">Cigarettes a day</label>
+              <div class="range-row">
+                <input type="range" id="perDay" min="1" max="60" value="20">
+                <output id="perDayOut" for="perDay">20</output>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="packPrice">Price of one pack</label>
+                <div class="money">
+                  <select id="currency" aria-label="Currency">
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="SAR">SAR</option>
+                    <option value="AED">AED</option>
+                    <option value="KWD">KWD</option>
+                    <option value="QAR">QAR</option>
+                    <option value="BHD">BHD</option>
+                    <option value="OMR">OMR</option>
+                    <option value="EGP">EGP</option>
+                    <option value="JOD">JOD</option>
+                    <option value="TRY">TRY</option>
+                  </select>
+                  <input type="number" id="packPrice" inputmode="decimal" min="0" step="0.25" value="10">
+                </div>
+              </div>
+              <div class="field">
+                <label for="perPack">Cigarettes per pack</label>
+                <input type="number" id="perPack" inputmode="numeric" min="1" max="50" value="20">
+              </div>
+            </div>
+          </form>
+
+          <div class="calc-results" aria-live="polite">
+            <div class="res"><span class="res-label">Every month</span><span class="res-val" id="rMonth">–</span></div>
+            <div class="res"><span class="res-label">Every year</span><span class="res-val" id="rYear">–</span></div>
+            <div class="res res-big"><span class="res-label">In 10 years</span><span class="res-val" id="rTen">–</span></div>
+            <p class="res-note"><strong id="rCigs">7,300</strong> cigarettes a year, every one of them lit when the Master says so.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ QUESTIONS THE BOOK ANSWERS ============ -->
+    <section class="band questions" aria-labelledby="q-title">
+      <div class="wrap two-col">
+        <div class="reveal">
+          <p class="kicker">Inside the book</p>
+          <h2 id="q-title">The questions <span class="red">no one answered</span> for you</h2>
+          <p class="sec-lead left">The book answers them, one by one, in plain words.</p>
+          <p class="also-inside">Also inside: real stories from smokers who tried to quit, a simple plan for your first days and weeks, and the scientific sources behind the book.</p>
+        </div>
+        <ul class="q-list reveal">
+          <li>Why does the first cigarette of the day feel so good?</li>
+          <li>Why do you keep checking the clock for the next one?</li>
+          <li>Why does willpower fail so many smart, strong people?</li>
+          <li>Who is really in charge when you light up?</li>
+          <li>How can quitting feel easy instead of painful?</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section class="band faq" aria-labelledby="faq-title">
+      <div class="wrap narrow">
+        <header class="sec-head center reveal">
+          <p class="kicker">Questions</p>
+          <h2 id="faq-title">Before you start</h2>
+        </header>
+        <div class="faq-list reveal">
+          <details>
+            <summary>Do I have to stop smoking before I start reading?</summary>
+            <p>No. Keep smoking as usual while you read. The book tells you when the moment comes.</p>
+          </details>
+          <details>
+            <summary>How should I read the book?</summary>
+            <p>Read it once from start to finish, at your own pace. Then keep it close: it is a guide you can come back to whenever you need it.</p>
+          </details>
+          <details>
+            <summary>Do I need strong willpower?</summary>
+            <p>No. This book is not about fighting yourself or counting days. It changes how you see the cigarette.</p>
+          </details>
+          <details>
+            <summary>I have tried to quit before and failed. Is this for me?</summary>
+            <p>Yes. This book was written for people who have tried before.</p>
+          </details>
+          <details>
+            <summary>How do I get the 29% discount?</summary>
+            <p>Leave your email at the bottom of this page. We'll email you a code for 29% off the book.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GET THE BOOK ============ -->
+    <section class="band get" id="get" aria-labelledby="get-title">
+      <div class="wrap get-grid">
+        <img class="get-cover reveal" src="assets/cover-en.jpg" alt="" width="941" height="1672" loading="lazy">
+        <div class="get-text reveal">
+          <p class="kicker">29% off</p>
+          <h2 id="get-title">Ready to <span class="red">break the chain?</span></h2>
+          <p class="sec-lead left">Leave your email and we'll send you a code for 29% off the book.</p>
+          <p class="book-format">eBook · English and Arabic</p>
+          <form class="notify" id="notifyForm" action="https://formspree.io/f/mbgozngw" method="POST">
+            <label for="email" class="sr-only">Email address</label>
+            <input id="email" name="email" type="email" required placeholder="you@example.com" autocomplete="email" data-fs-field>
+            <button type="submit" class="btn btn-red" data-fs-submit-btn>Get 29% off</button>
+            <p class="form-msg err" data-fs-error="email">Please enter a valid email address, like name@example.com.</p>
+          </form>
+          <p class="form-msg err" data-fs-error>Something went wrong. Please check your connection and try again.</p>
+          <p class="form-msg" data-fs-success>Thank you! Check your inbox for your 29% discount code.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p class="footer-title">The <em>Last</em> Cigarette</p>
+    <p>How nicotine enslaves you, and how to break free for good.</p>
+    <p class="muted">© <span id="year">2026</span> All rights reserved.</p>
+    <p class="muted"><a class="lang-link" href="ar.html" lang="ar" hreflang="ar">العربية</a></p>
+  </footer>
+
+  <script>
+    window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
+  </script>
+  <script src="https://unpkg.com/@formspree/ajax@1.1.5" defer></script>
+  <script src="script.js"></script>
+</body>
+</html>
